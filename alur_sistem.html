@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Diagram Laporan KP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fc;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        h1 { text-align: center; color: #d32f2f; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .instruction {
+            background-color: #e3f2fd;
+            border-left: 5px solid #1976d2;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        /* Specific Mermaid overrides for better print/screenshot */
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background-color: white;
+            padding: 20px;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Visualisasi Alur & Diagram Sistem PMI</h1>
+    
+    <div class="instruction">
+        <strong>💡 Tips:</strong> Tunggu beberapa saat agar diagram termuat sempurna. Anda dapat menggunakan fitur <em>Screenshot</em> (Windows + Shift + S) layar Anda untuk memotong gambar (<em>crop</em>) diagram-diagram di bawah ini dan memindahkannya ke Microsoft Word / Laporan Anda.
+    </div>
+
+    <!-- 1. USE CASE DIAGRAM -->
+    <div class="card">
+        <h2>1. Use Case Diagram (Interaksi Pengguna)</h2>
+        <div class="mermaid">
+        flowchart LR
+            classDef actor fill:#f4f4f4,stroke:#333,stroke-width:2px;
+            classDef usecase fill:#e1bee7,stroke:#8e24aa,stroke-width:2px,rx:20,ry:20;
+            
+            Admin("👔 Admin Gudang"):::actor
+            User("👤 User (Peminjam)"):::actor
+            
+            subgraph "Sistem Peminjaman Inventaris PMI"
+                direction TB
+                UC1(["🔐 Melakukan Login"]):::usecase
+                UC2(["📝 Registrasi"]):::usecase
+                
+                UC3(["👥 Kelola Data Pengguna"]):::usecase
+                UC4(["📦 Kelola Master Data Inventaris"]):::usecase
+                UC5(["🖨️ Generate QR Code Aset"]):::usecase
+                UC6(["✅ Verifikasi Peminjaman"]):::usecase
+                UC7(["🔍 Konfirmasi Pengembalian Barang"]):::usecase
+                UC8(["📊 Ekspor Cetak Laporan"]):::usecase
+                
+                UC9(["🛒 Cari Item Barang Tersedia"]):::usecase
+                UC10(["📤 Membuat Pengajuan Peminjaman"]):::usecase
+                UC11(["👁️ Cek Status Transaksi"]):::usecase
+            end
+            
+            UC4 -. "<< include >>" .-> UC5
+            
+            Admin --> UC1
+            Admin --> UC3
+            Admin --> UC4
+            Admin --> UC6
+            Admin --> UC7
+            Admin --> UC8
+            
+            User --> UC1
+            User --> UC2
+            User --> UC9
+            User --> UC10
+            User --> UC11
+        </div>
+    </div>
+
+    <!-- 2. ALUR ACTIVITY DIAGRAM PEMINJAMAN -->
+    <div class="card">
+        <h2>2. Activity Diagram (Alur Pengajuan & Verifikasi Peminjaman)</h2>
+        <div class="mermaid">
+        sequenceDiagram
+            autonumber
+            actor Peminjam
+            participant Sistem
+            actor Admin
+            
+            Peminjam->>Sistem: Membuka Halaman Pinjam Barang
+            Sistem-->>Peminjam: Menampilkan Daftar Barang Tersedia
+            Peminjam->>Sistem: Centang (Checklist) Barang & Pilih Tanggal
+            Peminjam->>Sistem: Klik "Ajukan Peminjaman"
+            Sistem->>Sistem: Menyimpan Log Transaksi (Status: Menunggu)
+            Sistem-->>Peminjam: Menampilkan Alert Sukses & Mengalihkan Halaman
+            
+            Note over Admin: Admin Memeriksa Sistem
+            Admin->>Sistem: Buka Halaman Verifikasi Peminjaman
+            Sistem-->>Admin: Menampilkan Daftar Permohonan (Pending)
+            
+            alt Jika Admin Menyetujui
+                Admin->>Sistem: Tekan Tombol [Setujui / Approve]
+                Sistem->>Sistem: Ubah Status "Disetujui"
+                Sistem-->>Peminjam: Informasi Peminjaman Diterima
+            else Jika Admin Menolak
+                Admin->>Sistem: Tekan Tombol [Tolak / Reject]
+                Sistem->>Sistem: Ubah Status "Ditolak"
+                Sistem-->>Peminjam: Informasi Peminjaman Ditolak
+            end
+        </div>
+    </div>
+
+    <!-- 3. ALUR FLOWCHART SISTEM (GENERAL) -->
+    <div class="card">
+        <h2>3. Flowchart Alur Aplikasi (Sirkulasi Masuk & Keluar)</h2>
+        <div class="mermaid">
+        flowchart TD
+            Start([Mulai]) --> IsLogin{Sudah Punya Akun?}
+            IsLogin -- Belum --> Register[Melakukan Pendaftaran / Registrasi] --> Login
+            IsLogin -- Sudah --> Login[Masukkan Email & Password]
+            
+            Login --> CekRole{Verifikasi Tipe Role?}
+            
+            %% Cabang Peminjam
+            CekRole -- "Sebagai Peminjam" --> DashboardUser[Masuk Dashboard Peminjam]
+            DashboardUser --> Ajukan[Memilih Barang & Tentukan Tenggat Kembalian]
+            Ajukan --> Tunggu[Status Permohonan ditahap "Menunggu"]
+            
+            Tunggu --> |Disetujui Admin| Diambil[Ambil Barang Logistik]
+            Diambil --> Gunakan[Gunakan Sesuai Keperluan]
+            Gunakan --> Kembalikan[Lapor & Serahkan Kesekretariat Admin]
+            Kembalikan --> DoneUser([Selesai])
+            
+            %% Cabang Admin
+            CekRole -- "Sebagai Admin" --> DashboardAdmin[Masuk Dashboard Admin]
+            DashboardAdmin --> CekPermohonan{Cek Request Masuk?}
+            
+            CekPermohonan -- Ada --> Keputusan{Tinjau Kuota & Kondisi?}
+            Keputusan -- Sesuai Syarat --> Approve[Tekan Approve] --> Serahkan[Berikan Kunci/Barang ke Peminjam]
+            Keputusan -- Ditolak --> Reject[Tekan Reject]
+            
+            DashboardAdmin --> TerimaBalik[Menerima Fisik Pengembalian]
+            TerimaBalik --> CekFisik{Barang Utuh/Lengkap?}
+            CekFisik -- Ya --> MarkReturn[Tekan Konfirmasi Pengembalian di Sistem]
+            MarkReturn --> Rekap[Otomatis Masuk Laporan Excel/PDF Akhir Bulan] --> DoneAdmin([Selesai])
+        </div>
+    </div>
+
+</div>
+
+<!-- Memuat Skrip untuk merender bahasa Mermaid menjadi Gambar Otomatis -->
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+node server.js
+
+
+use express as backend
+mongodb atlas for database
+
