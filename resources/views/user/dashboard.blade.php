@@ -33,9 +33,9 @@
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         position: relative;
         overflow: hidden;
-        border: none;
+        border: 1px solid rgba(0,0,0,0.1);
         height: 100%;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
     }
     .stat-card-modern:hover {
         transform: translateY(-8px) scale(1.02);
@@ -68,10 +68,10 @@
     /* Item Card */
     .item-card {
         border-radius: 14px;
-        border: 1px solid rgba(0,0,0,0.04);
+        border: 1px solid rgba(0,0,0,0.1);
         transition: all 0.3s ease;
         background: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
     .item-card:hover {
         transform: translateY(-4px);
@@ -91,8 +91,8 @@
     }
     .modern-card {
         border-radius: 18px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: 1px solid rgba(0,0,0,0.08);
     }
     .modern-card-header {
         background: white;

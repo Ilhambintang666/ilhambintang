@@ -18,9 +18,9 @@ use App\Http\Controllers\LaporanBarangController;
 // GUEST ROUTES (Must be before auth middleware)
 // ============================================
 
-// Root URL - redirect to login
+// Root URL - Landing Page
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('welcome');
 });
 
 // Authentication routes (must be accessible without auth)

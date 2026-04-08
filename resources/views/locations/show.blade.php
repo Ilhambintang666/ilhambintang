@@ -62,6 +62,72 @@
                     </table>
                 </div>
 
+                <div class="mt-4 mb-5">
+                    <h6 class="fw-bold mb-3 d-flex align-items-center text-dark">
+                        <i class="fas fa-box-open text-danger me-2"></i> Daftar Barang di Lokasi Ini
+                    </h6>
+                    @if($location->items->count() > 0)
+                        <div class="table-responsive rounded-3 border">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead style="background-color: #f8f9fa;">
+                                    <tr>
+                                        <th class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 12px 16px;">Info Barang</th>
+                                        <th class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 12px 16px;">Status</th>
+                                        <th class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 12px 16px;">Kondisi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($location->items as $item)
+                                    <tr>
+                                        <td class="px-3 py-3">
+                                            <div class="fw-bold text-dark mb-1">{{ $item->name }}</div>
+                                            <code class="bg-light text-secondary px-2 py-0 rounded border small me-2" style="font-size: 0.7rem;">{{ $item->barcode }}</code>
+                                            @if($item->is_loanable)
+                                                <span class="badge rounded-pill" style="background: rgba(25, 135, 84, 0.1); color: #198754; font-size: 0.65rem;">Pinjaman</span>
+                                            @else
+                                                <span class="badge rounded-pill" style="background: rgba(108, 117, 125, 0.1); color: #6c757d; font-size: 0.65rem;">Aset Tetap</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-3">
+                                            @switch($item->status)
+                                                @case('tersedia')
+                                                    <span class="badge rounded-pill" style="background: linear-gradient(135deg, #28a745, #20c997);"><i class="fas fa-check-circle me-1"></i>Tersedia</span>
+                                                    @break
+                                                @case('dipinjam')
+                                                    <span class="badge rounded-pill" style="background: linear-gradient(135deg, #ffc107, #fd7e14);"><i class="fas fa-handshake me-1"></i>Dipinjam</span>
+                                                    @break
+                                                @case('maintenance')
+                                                    <span class="badge rounded-pill" style="background: linear-gradient(135deg, #dc3545, #e83e8c);"><i class="fas fa-tools me-1"></i>Maintenance</span>
+                                                    @break
+                                            @endswitch
+                                        </td>
+                                        <td class="px-3">
+                                            @switch($item->condition)
+                                                @case('baik')
+                                                    <span class="small fw-bold" style="color: #28a745; font-size: 0.75rem;"><i class="fas fa-circle me-1" style="font-size: 6px; vertical-align: middle;"></i>Kondisi Baik</span>
+                                                    @break
+                                                @case('rusak')
+                                                    <span class="small fw-bold" style="color: #dc3545; font-size: 0.75rem;"><i class="fas fa-circle me-1" style="font-size: 6px; vertical-align: middle;"></i>Kondisi Rusak</span>
+                                                    @break
+                                                @case('dalam_perbaikan')
+                                                    <span class="small fw-bold" style="color: #ffc107; font-size: 0.75rem;"><i class="fas fa-circle me-1" style="font-size: 6px; vertical-align: middle;"></i>Dalam Perbaikan</span>
+                                                    @break
+                                            @endswitch
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center p-4 border rounded-3 bg-light">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3 opacity-50"></i>
+                            <h6 class="fw-bold text-muted">Belum Ada Barang</h6>
+                            <p class="text-muted small mb-0">Lokasi ini belum memiliki barang yang ditugaskan.</p>
+                        </div>
+                    @endif
+                </div>
+
                 <div class="d-flex justify-content-between align-items-center pt-4 border-top">
                     <a href="{{ route('locations.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-semibold hover-lift">
                         <i class="fas fa-arrow-left me-1 text-muted"></i> Kembali

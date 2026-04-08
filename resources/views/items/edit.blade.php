@@ -163,12 +163,13 @@
                             </div>
 
                             <div class="mb-4">
-                                <label for="price" class="form-label fw-bold text-muted small text-uppercase tracking-wide">Harga (Rp)</label>
-                                <input type="number"
+                                <label for="price_display" class="form-label fw-bold text-muted small text-uppercase tracking-wide">Harga (Rp)</label>
+                                <input type="text"
                                        class="form-control form-control-lg premium-input @error('price') is-invalid @enderror"
-                                       id="price" name="price"
-                                       value="{{ old('price', $item->price) }}"
-                                       min="0" step="0.01" placeholder="0.00">
+                                       id="price_display"
+                                       value="{{ old('price', rtrim(rtrim(number_format($item->price, 2, ',', ''), '0'), ',')) }}"
+                                       placeholder="Rp. 0,00">
+                                <input type="hidden" name="price" id="price" value="{{ old('price', $item->price) }}">
                                 @error('price')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -285,5 +286,47 @@ function updateLoanableStyle() {
         yesBox.className = 'p-3 border rounded-3 border-light';
     }
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    const priceDisplay = document.getElementById('price_display');
+    const priceInput = document.getElementById('price');
+
+    if (priceDisplay && priceInput.value) {
+        let initialValue = priceInput.value.replace('.', ',');
+        priceDisplay.value = formatRupiah(initialValue, 'Rp. ');
+    }
+
+    if (priceDisplay) {
+        priceDisplay.addEventListener('keyup', function(e) {
+            this.value = formatRupiah(this.value, 'Rp. ');
+            let rawValue = this.value.replace(/[^,\d]/g, '').replace(',', '.');
+            priceInput.value = rawValue;
+        });
+        
+        let form = priceDisplay.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                let rawValue = priceDisplay.value.replace(/[^,\d]/g, '').replace(',', '.');
+                priceInput.value = rawValue || 0;
+            });
+        }
+    }
+
+    function formatRupiah(angka, prefix) {
+        let number_string = angka.toString().replace(/[^,\d]/g, ''),
+            split = number_string.split(','),
+            sisa  = split[0].length % 3,
+            rupiah  = split[0].substr(0, sisa),
+            ribuan  = split[0].substr(sisa).match(/\d{3}/gi);
+
+        if (ribuan) {
+            let separator = sisa ? '.' : '';
+            rupiah += separator + ribuan.join('.');
+        }
+
+        rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+        return prefix == undefined ? rupiah : (rupiah ? 'Rp. ' + rupiah : '');
+    }
+});
 </script>
 @endsection

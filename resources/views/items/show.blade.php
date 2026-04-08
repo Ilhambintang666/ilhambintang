@@ -86,7 +86,7 @@
                             </tr>
                             <tr class="border-bottom border-light">
                                 <td class="text-muted fw-semibold py-3 text-uppercase small tracking-wide"><i class="fas fa-tag me-2 text-danger"></i>Harga</td>
-                                <td class="py-3"><span class="fw-bold fs-6 text-dark">Rp {{ number_format($item->price, 0, ',', '.') }}</span></td>
+                                <td class="py-3"><span class="fw-bold fs-6 text-dark">Rp. {{ number_format($item->price, 2, ',', '.') }}</span></td>
                             </tr>
                             <tr class="border-bottom border-light">
                                 <td class="text-muted fw-semibold py-3 text-uppercase small tracking-wide"><i class="fas fa-calendar-alt me-2 text-danger"></i>Tgl Pembelian</td>

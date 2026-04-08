@@ -5,9 +5,10 @@
 @section('content')
 <style>
     .bg-image {
-        background: 
-            linear-gradient(135deg, rgba(230, 0, 0, 0.75) 0%, rgba(155, 44, 155, 0.85) 100%),
-            url('{{ asset('images/pmi.jpeg') }}') no-repeat center center;
+        background: linear-gradient(
+            rgba(0, 0, 0, 0.4), 
+            rgba(0, 0, 0, 0.8)
+        ), url("{{ asset('images/pmi.jpeg') }}") no-repeat center center fixed;
         background-size: cover;
         position: relative;
         overflow: hidden;
@@ -74,9 +75,9 @@
     }
 
     .btn-login {
-        background: linear-gradient(135deg, #e60000 0%, #ff4b2b 100%);
+        background-color: #e60000;
         border: none;
-        border-radius: 14px;
+        border-radius: 8px;
         font-weight: 700;
         letter-spacing: 0.5px;
         transition: all 0.3s;
@@ -85,9 +86,8 @@
     }
 
     .btn-login:hover {
-        background: linear-gradient(135deg, #cc0000 0%, #e60000 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(230, 0, 0, 0.25);
+        background-color: #cc0000;
+        box-shadow: 0 4px 8px rgba(230, 0, 0, 0.2);
         color: white;
     }
 
@@ -148,10 +148,10 @@
 <div class="d-flex justify-content-center align-items-center min-vh-100 bg-image">
     <div class="card login-card p-4 p-md-5 fade-in-up" style="max-width: 450px; width: 90%;">
         {{-- Logo & Judul --}}
-        <div class="text-center mb-5 logo-container">
-            <img src="{{ asset('images/pmi.png') }}" alt="PMI Logo" width="100" class="mb-4">
-            <h2 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">Sistem Inventaris</h2>
-            <p class="text-secondary mb-0 fw-medium">PMI Kota Semarang</p>
+        <div class="text-center mb-4 logo-container">
+            <img src="{{ asset('images/pmi.png') }}" alt="PMI Logo" width="80" class="mb-3">
+            <h4 class="fw-bold text-dark mb-1">Login Inventaris</h4>
+            <p class="text-secondary mb-0 small">PMI Kota Semarang</p>
         </div>
         
         {{-- Form Login --}}
@@ -184,9 +184,9 @@
                 @enderror
             </div>
 
-            <div class="d-grid mb-4">
-                <button type="submit" class="btn btn-login shadow-sm d-flex justify-content-center align-items-center">
-                    MASUK SEKARANG <i class="fa-solid fa-arrow-right ms-2"></i>
+            <div class="d-grid mb-3 mt-4">
+                <button type="submit" class="btn btn-login fw-bold py-2 shadow-sm">
+                    Login
                 </button>
             </div>
             

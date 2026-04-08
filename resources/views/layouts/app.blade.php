@@ -103,9 +103,9 @@
 
         /* Card styling */
         .card {
-            border: none;
+            border: 1px solid rgba(0,0,0,0.08); /* Added border */
             border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08); /* Increased shadow */
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -214,13 +214,32 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
+        /* Checkbox visibility improvement */
+        .form-check-input {
+            border: 2px solid #adb5bd !important; /* Prominent border when unchecked */
+            background-color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--pmi-primary) !important;
+            border-color: var(--pmi-primary) !important;
+        }
+
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(230, 0, 0, 0.15) !important;
+            border-color: var(--pmi-primary) !important;
+        }
+
         /* Page header styling */
         .page-header {
             background: white;
             padding: 20px 25px;
             border-radius: 12px;
             margin-bottom: 25px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.08); /* Added border */
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08); /* Increased shadow */
         }
 
         .page-header h3 {
@@ -585,13 +604,23 @@
                                 href="{{ route('borrowings.index') }}">
                                 <i class="fas fa-history me-2"></i> <span class="nav-text">Daftar Transaksi</span>
                             </a>
-                            <a class="nav-link {{ request()->routeIs('admin.peminjaman.index') ? 'active' : '' }}"
+                            @php
+                                $pendingLoans = \App\Models\Loan::where('status', 'pending')->count();
+                                $pendingReturns = \App\Models\Loan::where('status', 'return_pending')->count();
+                            @endphp
+                            <a class="nav-link d-flex justify-content-between align-items-center {{ request()->routeIs('admin.peminjaman.index') ? 'active' : '' }}"
                                 href="{{ route('admin.peminjaman.index') }}">
-                                <i class="fas fa-check-circle me-2"></i> <span class="nav-text">Verif. Peminjaman</span>
+                                <span><i class="fas fa-check-circle me-2"></i> <span class="nav-text">Verif. Peminjaman</span></span>
+                                @if($pendingLoans > 0)
+                                    <span class="badge bg-warning text-dark rounded-pill shadow-sm px-2 py-1" style="font-size: 0.75rem;">{{ $pendingLoans }}</span>
+                                @endif
                             </a>
-                            <a class="nav-link {{ request()->routeIs('admin.peminjaman.returns') ? 'active' : '' }}"
+                            <a class="nav-link d-flex justify-content-between align-items-center {{ request()->routeIs('admin.peminjaman.returns') ? 'active' : '' }}"
                                 href="{{ route('admin.peminjaman.returns') }}">
-                                <i class="fas fa-clipboard-check me-2"></i> <span class="nav-text">Verif. Pengembalian</span>
+                                <span><i class="fas fa-clipboard-check me-2"></i> <span class="nav-text">Verif. Pengembalian</span></span>
+                                @if($pendingReturns > 0)
+                                    <span class="badge bg-warning text-dark rounded-pill shadow-sm px-2 py-1" style="font-size: 0.75rem;">{{ $pendingReturns }}</span>
+                                @endif
                             </a>
                             <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
                                 href="{{ route('admin.users.index') }}">

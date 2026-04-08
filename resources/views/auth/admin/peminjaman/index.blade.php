@@ -23,7 +23,7 @@
 <!-- Statistics Cards -->
 <div class="row mb-4">
     <div class="col-md-6">
-        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #e60000, #9b2c9b); color: white;">
+        <div class="card border shadow-sm h-100" style="background: linear-gradient(135deg, #e60000, #9b2c9b); color: white; border-color: rgba(255,255,255,0.1) !important;">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -36,7 +36,7 @@
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white;">
+        <div class="card border shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; border-color: rgba(255,255,255,0.1) !important;">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -52,7 +52,7 @@
 
 @if($loans->isEmpty())
     <!-- Empty State -->
-    <div class="card border-0 shadow-sm">
+    <div class="card border shadow-sm" style="border-color: rgba(0,0,0,0.08) !important;">
         <div class="card-body text-center py-5">
             <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#e60000,#9b2c9b);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
                 <i class="fas fa-check-circle fa-2x text-white"></i>
@@ -66,7 +66,7 @@
     <div class="row">
         @foreach($loans as $loan)
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 loan-card border-0 shadow-sm">
+            <div class="card h-100 loan-card border shadow-sm" style="border-color: rgba(0,0,0,0.08) !important;">
                 <div class="card-header bg-white border-0 py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="badge bg-warning text-dark">

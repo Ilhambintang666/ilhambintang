@@ -6,8 +6,8 @@
 <style>
     .modern-card {
         border-radius: 18px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: 1px solid rgba(0,0,0,0.08) !important;
     }
     .modern-card-header {
         background: white;
@@ -35,7 +35,7 @@
 
 <div class="row mb-4 fade-in">
     <div class="col-md-12">
-        <div class="page-header py-4" style="background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%); border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+        <div class="page-header py-4" style="background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%); border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.08);">
             <div class="d-flex justify-content-between align-items-center px-4">
                 <div>
                     <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-plus-circle me-2 text-danger"></i>Pinjam Barang Tersedia</h4>
