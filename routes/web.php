@@ -68,7 +68,11 @@ Route::middleware(['auth'])->group(function () {
     // Resource Routes
     Route::resource('categories', CategoryController::class);
     Route::resource('locations', LocationController::class);
+    
+    // Items Routes
+    Route::post('items/bulk-destroy', [ItemController::class, 'bulkDestroy'])->name('items.bulk-destroy');
     Route::resource('items', ItemController::class);
+    
     Route::resource('borrowings', BorrowingController::class);
 
     // Custom Routes untuk Borrowing

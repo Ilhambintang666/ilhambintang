@@ -7,39 +7,51 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class LaporanPeminjamanExport implements FromCollection, WithHeadings
 {
-    protected $barangMasuk;
-    protected $barangKeluar;
+    protected $barangDipinjam;
+    protected $barangDikembalikan;
+    protected $barangBaruMasuk;
 
-    public function __construct($barangMasuk, $barangKeluar)
+    public function __construct($barangDipinjam, $barangDikembalikan, $barangBaruMasuk)
     {
-        $this->barangMasuk = $barangMasuk;
-        $this->barangKeluar = $barangKeluar;
+        $this->barangDipinjam = $barangDipinjam;
+        $this->barangDikembalikan = $barangDikembalikan;
+        $this->barangBaruMasuk = $barangBaruMasuk;
     }
 
     public function collection()
     {
-        // Combine both collections with a type indicator
         $data = collect();
         
-        // Add barang keluar (Peminjaman)
-        foreach ($this->barangKeluar as $item) {
+        // Add barang dipinjam
+        foreach ($this->barangDipinjam as $item) {
             $data->push([
-                'Jenis' => 'Peminjaman (Barang Keluar)',
-                'Tanggal' => $item->tanggal,
-                'Nama Barang' => $item->nama_barang,
-                'Jumlah' => $item->jumlah,
-                'Keterangan' => $item->keterangan
+                'Kategori Laporan' => '1. PRE-DIPINJAM',
+                'Tanggal'          => $item->tanggal,
+                'Nama Barang'      => $item->nama_barang,
+                'Jumlah'           => $item->jumlah,
+                'Keterangan'       => $item->keterangan
             ]);
         }
         
-        // Add barang masuk (Pengembalian)
-        foreach ($this->barangMasuk as $item) {
+        // Add barang dikembalikan
+        foreach ($this->barangDikembalikan as $item) {
             $data->push([
-                'Jenis' => 'Pengembalian (Barang Masuk)',
-                'Tanggal' => $item->tanggal,
-                'Nama Barang' => $item->nama_barang,
-                'Jumlah' => $item->jumlah,
-                'Keterangan' => $item->keterangan
+                'Kategori Laporan' => '2. PENGEMBALIAN',
+                'Tanggal'          => $item->tanggal,
+                'Nama Barang'      => $item->nama_barang,
+                'Jumlah'           => $item->jumlah,
+                'Keterangan'       => $item->keterangan
+            ]);
+        }
+
+        // Add barang baru masuk
+        foreach ($this->barangBaruMasuk as $item) {
+            $data->push([
+                'Kategori Laporan' => '3. ASET DITAMBAHKAN',
+                'Tanggal'          => $item->tanggal,
+                'Nama Barang'      => $item->nama_barang,
+                'Jumlah'           => $item->jumlah,
+                'Keterangan'       => $item->keterangan
             ]);
         }
         
@@ -49,11 +61,11 @@ class LaporanPeminjamanExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Jenis',
+            'Kategori Laporan',
             'Tanggal',
             'Nama Barang',
             'Jumlah',
-            'Keterangan'
+            'Keterangan / Detail'
         ];
     }
 }

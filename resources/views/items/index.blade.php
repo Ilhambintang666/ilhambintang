@@ -32,7 +32,15 @@
                     <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <label class="form-label fw-semibold small">Jenis Barang</label>
+                <select name="is_loanable" class="form-select">
+                    <option value="">Semua Jenis</option>
+                    <option value="1" {{ request('is_loanable') === '1' ? 'selected' : '' }}>Barang Pinjaman</option>
+                    <option value="0" {{ request('is_loanable') === '0' ? 'selected' : '' }}>Barang Tetap</option>
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label class="form-label fw-semibold small">Kondisi</label>
                 <select name="condition" class="form-select">
                     <option value="">Semua Kondisi</option>
@@ -41,7 +49,7 @@
                     <option value="dalam_perbaikan" {{ request('condition') == 'dalam_perbaikan' ? 'selected' : '' }}>Dalam Perbaikan</option>
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label fw-semibold small">Pencarian</label>
                 <input type="text" name="search" class="form-control" 
                        placeholder="Cari nama/barcode..." value="{{ request('search') }}">
@@ -65,7 +73,12 @@
             <i class="fas fa-list me-2 text-danger"></i>
             Daftar Barang Inventaris
         </h5>
-        <span class="badge bg-danger rounded-pill">{{ $items->count() }} Barang</span>
+        <div class="d-flex align-items-center gap-3">
+            <button type="button" id="bulkDeleteBtn" class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm d-none" onclick="submitBulkDelete()">
+                <i class="fas fa-trash me-2"></i>Hapus Terpilih (<span id="selectedCount">0</span>)
+            </button>
+            <span class="badge bg-danger rounded-pill">{{ $items->count() }} Barang</span>
+        </div>
     </div>
     <div class="card-body p-0">
         @if($items->count() > 0)
@@ -73,12 +86,15 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light">
                         <tr style="border-bottom: 2px solid #e60000;">
+                            <th style="width: 40px; padding:16px 16px; text-align:center;">
+                                <input type="checkbox" id="selectAllItems" class="form-check-input shadow-sm" style="cursor: pointer; transform: scale(1.1);">
+                            </th>
                             <th style="font-size:0.82rem; text-transform:uppercase; letter-spacing:.5px; padding:16px 16px; color:#333; font-weight:600;">No</th>
                             <th style="font-size:0.82rem; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px; color:#333; font-weight:600;">Nama Barang</th>
                             <th style="font-size:0.82rem; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px; color:#333; font-weight:600;">Barcode</th>
                             <th style="font-size:0.82rem; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px; color:#333; font-weight:600;">Kategori</th>
                             <th style="font-size:0.82rem; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px; color:#333; font-weight:600;">Lokasi</th>
-                            <th style="font-size:0.82rem; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px; color:#333; font-weight:600;">Qty</th>
+                            <th style="font-size:0.82rem; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px; color:#333; font-weight:600;">Jenis</th>
                             <th style="font-size:0.82rem; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px; color:#333; font-weight:600;">Status</th>
                             <th style="font-size:0.82rem; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px; color:#333; font-weight:600;">Kondisi</th>
                             <th style="font-size:0.82rem; text-transform:uppercase; letter-spacing:.5px; padding:16px 12px; color:#333; font-weight:600;" class="text-center">Aksi</th>
@@ -87,6 +103,9 @@
                     <tbody class="border-top-0">
                         @foreach($items as $index => $item)
                         <tr style="transition: all 0.3s;" class="hover-shadow-row">
+                            <td class="px-4 text-center">
+                                <input type="checkbox" class="form-check-input item-checkbox shadow-sm" value="{{ $item->id }}" style="cursor: pointer; transform: scale(1.1);">
+                            </td>
                             <td class="px-4"><strong class="text-muted">{{ $index + 1 }}</strong></td>
                             <td>
                                 <strong>{{ $item->name }}</strong>
@@ -104,7 +123,18 @@
                                 <span class="badge bg-light text-dark border shadow-sm rounded-pill px-3"><i class="fas fa-map-marker-alt me-1 text-success"></i>{{ $item->location->name }}</span>
                             </td>
                             <td>
-                                <strong>{{ $item->quantity }}</strong>
+                                @if($item->is_loanable)
+                                    <span class="badge rounded-pill px-3 py-2" style="background:rgba(25,135,84,0.1); color:#198754; border:1px solid rgba(25,135,84,0.2);">
+                                        <i class="fas fa-hand-holding me-1"></i>Pinjaman
+                                    </span>
+                                @else
+                                    <span class="badge rounded-pill px-3 py-2" style="background:rgba(220,53,69,0.1); color:#dc3545; border:1px solid rgba(220,53,69,0.2);">
+                                        <i class="fas fa-lock me-1"></i>Tetap
+                                    </span>
+                                @endif
+                                <div class="mt-1 small">
+                                   <strong class="text-primary">{{ $item->total_sejenis }}</strong> <span class="text-muted">Total Unit</span>
+                                </div>
                             </td>
                             <td>
                                 @switch($item->status)
@@ -195,4 +225,73 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
 }
 </style>
+
+<form id="bulkDeleteForm" action="{{ route('items.bulk-destroy') }}" method="POST" style="display: none;">
+    @csrf
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAllItems');
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const selectedCountSpan = document.getElementById('selectedCount');
+
+    function updateBulkDeleteButton() {
+        const checkedCount = document.querySelectorAll('.item-checkbox:checked').length;
+        selectedCountSpan.textContent = checkedCount;
+        
+        if (checkedCount > 0) {
+            bulkDeleteBtn.classList.remove('d-none');
+        } else {
+            bulkDeleteBtn.classList.add('d-none');
+        }
+
+        // update selectAll state
+        if(selectAllCheckbox) {
+            if (checkedCount === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedCount === itemCheckboxes.length && itemCheckboxes.length > 0) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            itemCheckboxes.forEach(cb => cb.checked = this.checked);
+            updateBulkDeleteButton();
+        });
+    }
+
+    itemCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkDeleteButton);
+    });
+});
+
+function submitBulkDelete() {
+    const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    if (checkedBoxes.length === 0) return;
+
+    if (confirm(`Peringatan: Anda akan menghapus ${checkedBoxes.length} barang sekaligus.\nTindakan ini tidak dapat dibatalkan.\n\nApakah Anda yakin ingin melanjutkan?`)) {
+        const form = document.getElementById('bulkDeleteForm');
+        // Clear any old hidden inputs
+        form.querySelectorAll('input[name="item_ids[]"]').forEach(el => el.remove());
+        
+        checkedBoxes.forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'item_ids[]';
+            input.value = cb.value;
+            form.appendChild(input);
+        });
+        form.submit();
+    }
+}
+</script>
 @endsection

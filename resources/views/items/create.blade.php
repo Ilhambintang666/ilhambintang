@@ -221,7 +221,7 @@
                                                        {{ old('is_loanable', '1') == '0' ? 'checked' : '' }}
                                                        onchange="updateLoanableStyle()">
                                                 <div>
-                                                    <div class="fw-bold text-dark"><i class="fas fa-lock me-1 text-danger"></i> Barang Paten</div>
+                                                    <div class="fw-bold text-dark"><i class="fas fa-lock me-1 text-danger"></i> Barang Tetap</div>
                                                     <div class="text-muted small">Inventaris tetap, tidak dapat dipinjam</div>
                                                 </div>
                                             </div>

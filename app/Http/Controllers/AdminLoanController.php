@@ -56,7 +56,10 @@ class AdminLoanController extends Controller
     public function confirmReturn($id)
     {
         $loan = Loan::findOrFail($id);
-        $loan->update(['status' => 'returned']);
+        $loan->update([
+            'status' => 'returned',
+            'returned_at' => now()
+        ]);
         $loan->item->update(['status' => 'tersedia']);
 
         return back()->with('success', 'Pengembalian dikonfirmasi');
@@ -69,7 +72,10 @@ class AdminLoanController extends Controller
             return back()->with('error', 'Status peminjaman tidak valid untuk persetujuan pengembalian');
         }
 
-        $loan->update(['status' => 'returned']);
+        $loan->update([
+            'status' => 'returned',
+            'returned_at' => now()
+        ]);
         $loan->item->update(['status' => 'tersedia']);
 
         return back()->with('success', 'Pengembalian disetujui');

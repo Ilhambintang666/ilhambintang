@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Peminjaman - PMI Semarang</title>
+    <title>Laporan Lengkap - PMI Semarang</title>
     <style>
         @page { margin: 30px; }
         body {
@@ -57,11 +57,12 @@
             border: 1px solid #dee2e6;
             padding: 15px;
             border-radius: 8px;
+            width: 33%;
         }
         
         .summary-card.keluar { border-top: 4px solid #dc3545; }
         .summary-card.masuk { border-top: 4px solid #28a745; }
-        .summary-card.sisa { border-top: 4px solid #ffc107; }
+        .summary-card.baru { border-top: 4px solid #17a2b8; }
 
         .summary-card h3 {
             margin: 0;
@@ -93,6 +94,7 @@
         
         .section.keluar h2 { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; }
         .section.masuk h2 { color: #28a745; background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .section.baru h2 { color: #17a2b8; background-color: #d1ecf1; border: 1px solid #bee5eb; }
         
         table.data-table {
             width: 100%;
@@ -104,6 +106,7 @@
             border: 1px solid #dee2e6;
             padding: 10px;
             text-align: left;
+            vertical-align: top;
         }
         
         table.data-table th {
@@ -139,7 +142,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Laporan Sirkulasi Inventaris</h1>
+        <h1>Laporan Inventaris PMI</h1>
         <p>Palang Merah Indonesia - Cabang Kota Semarang</p>
     </div>
     
@@ -150,36 +153,36 @@
     <table class="summary-table">
         <tr>
             <td class="summary-card keluar">
-                <h3>{{ $barangKeluar->count() }}</h3>
-                <p>Total Peminjaman</p>
+                <h3>{{ $barangDipinjam->count() }}</h3>
+                <p>1. Pre-Dipinjam</p>
             </td>
             <td class="summary-card masuk">
-                <h3>{{ $barangMasuk->count() }}</h3>
-                <p>Total Pengembalian</p>
+                <h3>{{ $barangDikembalikan->count() }}</h3>
+                <p>2. Pengembalian</p>
             </td>
-            <td class="summary-card sisa">
-                <h3>{{ $barangKeluar->count() - $barangMasuk->count() }}</h3>
-                <p>Status Menggantung</p>
+            <td class="summary-card baru">
+                <h3>{{ $barangBaruMasuk->count() }}</h3>
+                <p>3. Aset Ditambahkan</p>
             </td>
         </tr>
     </table>
     
     <div class="section keluar">
-        <h2>Histori Peminjaman (Barang Keluar)</h2>
+        <h2>1. Laporan Peminjaman</h2>
         
-        @if($barangKeluar->count() > 0)
+        @if($barangDipinjam->count() > 0)
         <table class="data-table">
             <thead>
                 <tr>
-                    <th width="8%">No</th>
-                    <th width="17%">Tanggal</th>
+                    <th width="5%">No</th>
+                    <th width="15%">Tanggal</th>
                     <th width="35%">Nama Barang</th>
                     <th width="10%">Jumlah</th>
-                    <th width="30%">Keterangan</th>
+                    <th width="35%">Keterangan</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($barangKeluar as $index => $item)
+                @foreach($barangDipinjam as $index => $item)
                 <tr>
                     <td align="center">{{ $index + 1 }}</td>
                     <td>{{ $item->tanggal }}</td>
@@ -196,21 +199,21 @@
     </div>
     
     <div class="section masuk">
-        <h2>Histori Pengembalian (Barang Masuk)</h2>
+        <h2>2. Laporan Pengembalian</h2>
         
-        @if($barangMasuk->count() > 0)
+        @if($barangDikembalikan->count() > 0)
         <table class="data-table">
             <thead>
                 <tr>
-                    <th width="8%">No</th>
-                    <th width="17%">Tanggal</th>
+                    <th width="5%">No</th>
+                    <th width="15%">Tanggal</th>
                     <th width="35%">Nama Barang</th>
                     <th width="10%">Jumlah</th>
-                    <th width="30%">Keterangan</th>
+                    <th width="35%">Keterangan</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($barangMasuk as $index => $item)
+                @foreach($barangDikembalikan as $index => $item)
                 <tr>
                     <td align="center">{{ $index + 1 }}</td>
                     <td>{{ $item->tanggal }}</td>
@@ -225,9 +228,40 @@
         <div class="empty-state">Tidak ada aktivitas pengembalian barang pada periode yang dipilih.</div>
         @endif
     </div>
+
+    <div class="section baru">
+        <h2>3. Laporan Barang Baru (Aset)</h2>
+        
+        @if($barangBaruMasuk->count() > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th width="5%">No</th>
+                    <th width="15%">Tanggal Beli</th>
+                    <th width="35%">Nama Barang</th>
+                    <th width="10%">Jumlah</th>
+                    <th width="35%">Detail & Harga</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($barangBaruMasuk as $index => $item)
+                <tr>
+                    <td align="center">{{ $index + 1 }}</td>
+                    <td>{{ $item->tanggal }}</td>
+                    <td><strong>{{ $item->nama_barang }}</strong></td>
+                    <td align="center">{{ $item->jumlah }}</td>
+                    <td>{!! nl2br(e($item->keterangan)) !!}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @else
+        <div class="empty-state">Tidak ada penambahan aset inventaris baru pada periode yang dipilih.</div>
+        @endif
+    </div>
     
     <div class="footer">
-        Dokumen ini dibuat otomatis oleh Sistem Inventaris PMI Kota Semarang pada {{ now()->format('d/m/Y H:i:s') }}
+        Dokumen ini digenerate secara otomatis oleh Sistem Inventaris PMI Kota Semarang pada {{ now()->format('d/m/Y H:i:s') }}
     </div>
 </body>
 </html>

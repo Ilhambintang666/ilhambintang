@@ -95,9 +95,16 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card modern-card">
-                <div class="card-header modern-card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-boxes me-2 text-success"></i>Daftar Inventaris Tersedia</h5>
-                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 border border-success border-opacity-25">{{ $availableItems->count() }} item tersedia</span>
+                <div class="card-header modern-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-boxes me-2 text-success"></i>Daftar Inventaris Tersedia</h5>
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 ms-3 border border-success border-opacity-25 d-none d-sm-inline-block">{{ $availableItems->count() }} item tersedia</span>
+                    </div>
+                    
+                    <div class="position-relative" style="max-width: 300px; width: 100%;">
+                        <i class="fas fa-search position-absolute text-muted" style="top: 50%; left: 15px; transform: translateY(-50%);"></i>
+                        <input type="text" id="searchItem" class="form-control rounded-pill ps-5 border-0 shadow-sm bg-light" placeholder="Cari nama barang atau barcode...">
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -337,6 +344,41 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!confirm(`Anda akan mengajukan peminjaman untuk ${checkedItems.length} item: ${itemNames}.\nLanjutkan?`)) {
                 e.preventDefault();
             }
+        });
+    }
+
+    // Search filter logic
+    const searchInput = document.getElementById('searchItem');
+    const itemRows = document.querySelectorAll('.item-row');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+
+            itemRows.forEach(row => {
+                const badgeElement = row.querySelector('.fw-bold.text-dark');
+                const pElement = row.querySelector('small.text-muted');
+                const categoryElement = row.querySelector('td:nth-child(3) .badge');
+                
+                const itemName = badgeElement ? badgeElement.textContent.toLowerCase() : '';
+                const itemBarcode = pElement ? pElement.textContent.toLowerCase() : '';
+                const itemCategory = categoryElement ? categoryElement.textContent.toLowerCase() : '';
+                
+                if (itemName.includes(searchTerm) || itemBarcode.includes(searchTerm) || itemCategory.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                    // Uncheck hidden items
+                    const checkbox = row.querySelector('.item-checkbox');
+                    if(checkbox && checkbox.checked) {
+                        checkbox.checked = false;
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+
+            // Update selectAll checked state based on visible items
+            updateSelectedCount();
         });
     }
 });

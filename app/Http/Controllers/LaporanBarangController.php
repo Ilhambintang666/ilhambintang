@@ -13,176 +13,105 @@ use Carbon\Carbon;
 
 class LaporanBarangController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
+    private function getReportData($dari, $sampai)
     {
-        // Get date range from request or set default (current month)
-        $dari = $request->input('dari', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $sampai = $request->input('sampai', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        // 1. Barang Dipinjam (Barang Keluar)
+        $queryBorrow = Borrowing::with('item');
+        if ($dari) $queryBorrow->where('borrow_date', '>=', $dari);
+        if ($sampai) $queryBorrow->where('borrow_date', '<=', $sampai);
         
-        // Query borrowings with date range
-        $query = Borrowing::with('item');
-        
-        if ($dari) {
-            $query->where('borrow_date', '>=', $dari);
-        }
-        
-        if ($sampai) {
-            $query->where('borrow_date', '<=', $sampai);
-        }
-        
-        $borrowings = $query->orderBy('borrow_date', 'desc')->get();
-        
-        // barang keluar = items borrowed during the period
-        $barangKeluar = $borrowings->map(function ($b) {
+        $barangDipinjam = $queryBorrow->orderBy('borrow_date', 'desc')->get()->map(function ($b) {
             return (object) [
                 'tanggal' => Carbon::parse($b->borrow_date)->format('d-m-Y'),
                 'nama_barang' => $b->item ? $b->item->name : 'N/A',
                 'jumlah' => 1,
-                'keterangan' => 'Peminjaman oleh ' . $b->borrower_name
+                'keterangan' => 'Dipinjam oleh: ' . $b->borrower_name
             ];
         });
+
+        // 2. Barang Dikembalikan
+        $queryReturn = Borrowing::with('item')->whereNotNull('return_date');
+        if ($dari) $queryReturn->where('return_date', '>=', $dari);
+        if ($sampai) $queryReturn->where('return_date', '<=', $sampai);
         
-        // barang masuk = items returned during the period
-        $queryMasuk = Borrowing::with('item')
-            ->whereNotNull('return_date');
-        
-        if ($dari) {
-            $queryMasuk->where('return_date', '>=', $dari);
-        }
-        
-        if ($sampai) {
-            $queryMasuk->where('return_date', '<=', $sampai);
-        }
-        
-        $returnedItems = $queryMasuk->orderBy('return_date', 'desc')->get();
-        
-        $barangMasuk = $returnedItems->map(function ($b) {
+        $barangDikembalikan = $queryReturn->orderBy('return_date', 'desc')->get()->map(function ($b) {
             return (object) [
                 'tanggal' => Carbon::parse($b->return_date)->format('d-m-Y'),
                 'nama_barang' => $b->item ? $b->item->name : 'N/A',
                 'jumlah' => 1,
-                'keterangan' => 'Dikembalikan oleh ' . $b->borrower_name
+                'keterangan' => 'Dikembalikan oleh: ' . $b->borrower_name
             ];
         });
-        
-        return view('auth.admin.peminjaman.barang', compact('barangMasuk', 'barangKeluar', 'dari', 'sampai'));
+
+        // 3. Barang Ditambahkan (Barang Masuk)
+        $queryNewItem = \App\Models\Item::query();
+        if ($dari && $sampai) {
+            $queryNewItem->where(function($q) use ($dari, $sampai) {
+                $q->whereBetween('purchase_date', [$dari, $sampai])
+                  ->orWhereBetween('created_at', [$dari . ' 00:00:00', $sampai . ' 23:59:59']);
+            });
+        } elseif ($dari) {
+            $queryNewItem->where(function($q) use ($dari) {
+                $q->where('purchase_date', '>=', $dari)
+                  ->orWhere('created_at', '>=', $dari . ' 00:00:00');
+            });
+        } elseif ($sampai) {
+            $queryNewItem->where(function($q) use ($sampai) {
+                $q->where('purchase_date', '<=', $sampai)
+                  ->orWhere('created_at', '<=', $sampai . ' 23:59:59');
+            });
+        }
+
+        $barangBaruMasuk = $queryNewItem->orderBy('created_at', 'desc')->get()->map(function ($i) {
+            $tgl = $i->purchase_date ? Carbon::parse($i->purchase_date)->format('d-m-Y') : Carbon::parse($i->created_at)->format('d-m-Y');
+            $harga = $i->price ? 'Rp ' . number_format($i->price, 0, ',', '.') : '-';
+            return (object) [
+                'tanggal' => $tgl,
+                'nama_barang' => $i->name,
+                'jumlah' => 1, // tiap row 1 barang (bisa juga $i->quantity kalau ada logic grouping)
+                'keterangan' => 'Kondisi: ' . ucfirst($i->condition) . ' | Harga: ' . $harga
+            ];
+        });
+
+        return compact('barangDipinjam', 'barangDikembalikan', 'barangBaruMasuk');
     }
 
-    /**
-     * Generate PDF report
-     */
+    public function index(Request $request)
+    {
+        $dari = $request->input('dari', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->input('sampai', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        
+        $data = $this->getReportData($dari, $sampai);
+        $data['dari'] = $dari;
+        $data['sampai'] = $sampai;
+        
+        return view('auth.admin.peminjaman.barang', $data);
+    }
+
     public function pdf(Request $request)
     {
         $dari = $request->input('dari', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->input('sampai', Carbon::now()->endOfMonth()->format('Y-m-d'));
         
-        // Get barang keluar
-        $query = Borrowing::with('item');
+        $data = $this->getReportData($dari, $sampai);
+        $data['dari'] = $dari;
+        $data['sampai'] = $sampai;
         
-        if ($dari) {
-            $query->where('borrow_date', '>=', $dari);
-        }
-        
-        if ($sampai) {
-            $query->where('borrow_date', '<=', $sampai);
-        }
-        
-        $borrowings = $query->orderBy('borrow_date', 'desc')->get();
-        
-        $barangKeluar = $borrowings->map(function ($b) {
-            return (object) [
-                'tanggal' => Carbon::parse($b->borrow_date)->format('d-m-Y'),
-                'nama_barang' => $b->item ? $b->item->name : 'N/A',
-                'jumlah' => 1,
-                'keterangan' => 'Peminjaman oleh ' . $b->borrower_name
-            ];
-        });
-        
-        // Get barang masuk
-        $queryMasuk = Borrowing::with('item')
-            ->whereNotNull('return_date');
-        
-        if ($dari) {
-            $queryMasuk->where('return_date', '>=', $dari);
-        }
-        
-        if ($sampai) {
-            $queryMasuk->where('return_date', '<=', $sampai);
-        }
-        
-        $returnedItems = $queryMasuk->orderBy('return_date', 'desc')->get();
-        
-        $barangMasuk = $returnedItems->map(function ($b) {
-            return (object) [
-                'tanggal' => Carbon::parse($b->return_date)->format('d-m-Y'),
-                'nama_barang' => $b->item ? $b->item->name : 'N/A',
-                'jumlah' => 1,
-                'keterangan' => 'Dikembalikan oleh ' . $b->borrower_name
-            ];
-        });
-        
-        $pdf = PDF::loadView('auth.admin.peminjaman.barang-pdf', compact('barangMasuk', 'barangKeluar', 'dari', 'sampai'));
-        
-        return $pdf->download('laporan-peminjaman-' . date('Y-m-d') . '.pdf');
+        $pdf = PDF::loadView('auth.admin.peminjaman.barang-pdf', $data);
+        return $pdf->download('laporan-inventaris-lengkap-' . date('Y-m-d') . '.pdf');
     }
 
-    /**
-     * Generate Excel report
-     */
     public function excel(Request $request)
     {
         $dari = $request->input('dari', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->input('sampai', Carbon::now()->endOfMonth()->format('Y-m-d'));
         
-        // Get barang keluar
-        $query = Borrowing::with('item');
+        $data = $this->getReportData($dari, $sampai);
         
-        if ($dari) {
-            $query->where('borrow_date', '>=', $dari);
-        }
-        
-        if ($sampai) {
-            $query->where('borrow_date', '<=', $sampai);
-        }
-        
-        $borrowings = $query->orderBy('borrow_date', 'desc')->get();
-        
-        $barangKeluar = $borrowings->map(function ($b) {
-            return (object) [
-                'tanggal' => Carbon::parse($b->borrow_date)->format('d-m-Y'),
-                'nama_barang' => $b->item ? $b->item->name : 'N/A',
-                'jumlah' => 1,
-                'keterangan' => 'Peminjaman oleh ' . $b->borrower_name
-            ];
-        });
-        
-        // Get barang masuk
-        $queryMasuk = Borrowing::with('item')
-            ->whereNotNull('return_date');
-        
-        if ($dari) {
-            $queryMasuk->where('return_date', '>=', $dari);
-        }
-        
-        if ($sampai) {
-            $queryMasuk->where('return_date', '<=', $sampai);
-        }
-        
-        $returnedItems = $queryMasuk->orderBy('return_date', 'desc')->get();
-        
-        $barangMasuk = $returnedItems->map(function ($b) {
-            return (object) [
-                'tanggal' => Carbon::parse($b->return_date)->format('d-m-Y'),
-                'nama_barang' => $b->item ? $b->item->name : 'N/A',
-                'jumlah' => 1,
-                'keterangan' => 'Dikembalikan oleh ' . $b->borrower_name
-            ];
-        });
-        
-        // Generate Excel using simple export
-        return Excel::download(new \App\Exports\LaporanPeminjamanExport($barangMasuk, $barangKeluar), 'laporan-peminjaman-' . date('Y-m-d') . '.xlsx');
+        return Excel::download(new \App\Exports\LaporanPeminjamanExport(
+            $data['barangDipinjam'], 
+            $data['barangDikembalikan'], 
+            $data['barangBaruMasuk']
+        ), 'laporan-inventaris-lengkap-' . date('Y-m-d') . '.xlsx');
     }
 }

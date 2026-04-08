@@ -9,9 +9,38 @@ use Illuminate\Http\Request;
 
 class ItemController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = Item::with(['category', 'location'])->get();
+        $query = Item::with(['category', 'location']);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('condition')) {
+            $query->where('condition', $request->condition);
+        }
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('barcode', 'like', '%' . $request->search . '%');
+            });
+        }
+        if ($request->has('is_loanable') && $request->is_loanable !== '') {
+            $query->where('is_loanable', (bool) $request->is_loanable);
+        }
+
+        $items = $query->orderBy('name')->get();
+        
+        // Count total similar items by name
+        $nameCounts = Item::select('name')
+            ->selectRaw('count(*) as total')
+            ->groupBy('name')
+            ->pluck('total', 'name');
+
+        foreach ($items as $item) {
+            $item->total_sejenis = $nameCounts[$item->name] ?? 1;
+        }
+
         return view('items.index', compact('items'));
     }
 
@@ -49,14 +78,17 @@ class ItemController extends Controller
         $barcode = $prefix . '-' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
         
         Item::create([
-            'name'        => $name,
-            'barcode'     => $barcode,
-            'category_id' => $request->category_id,
-            'location_id' => $request->location_id,
-            'condition'   => 'baik',
-            'status'      => 'tersedia',
-            'quantity'    => 1, // setiap barang dihitung satuan
-            'is_loanable' => $request->has('is_loanable') ? 1 : 0,
+            'name'          => $name,
+            'barcode'       => $barcode,
+            'category_id'   => $request->category_id,
+            'location_id'   => $request->location_id,
+            'description'   => $request->description,
+            'purchase_date' => $request->purchase_date,
+            'price'         => $request->price,
+            'condition'     => 'baik',
+            'status'        => 'tersedia',
+            'quantity'      => 1, // setiap barang dihitung satuan
+            'is_loanable'   => $request->is_loanable == '1' ? 1 : 0,
         ]);
     }
 
@@ -88,13 +120,15 @@ class ItemController extends Controller
             'condition'     => 'required|in:baik,rusak,dalam_perbaikan',
             'status'        => 'required|in:tersedia,dipinjam,maintenance',
             'quantity'      => 'required|integer|min:1',
+            'is_loanable'   => 'required|in:0,1',
             'purchase_date' => 'nullable|date',
             'price'         => 'nullable|numeric|min:0'
         ]);
 
-        $item->update(array_merge($request->all(), [
-            'is_loanable' => $request->has('is_loanable') ? 1 : 0,
-        ]));
+        $data = $request->all();
+        $data['is_loanable'] = $request->is_loanable == '1' ? 1 : 0;
+
+        $item->update($data);
         return redirect()->route('items.index')->with('success', 'Barang berhasil diupdate!');
     }
 
@@ -102,5 +136,17 @@ class ItemController extends Controller
     {
         $item->delete();
         return redirect()->route('items.index')->with('success', 'Barang berhasil dihapus!');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'item_ids' => 'required|array',
+            'item_ids.*' => 'exists:items,id'
+        ]);
+
+        Item::whereIn('id', $request->item_ids)->delete();
+
+        return redirect()->route('items.index')->with('success', count($request->item_ids) . ' barang berhasil dihapus sekaligus!');
     }
 }

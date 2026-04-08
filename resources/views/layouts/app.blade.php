@@ -82,10 +82,23 @@
             background-color: #f5f7fa;
             min-height: 100vh;
             margin-left: var(--sidebar-width);
-            transition: margin-left 0.3s ease;
+            transition: margin-left 0.3s ease, width 0.3s ease, max-width 0.3s ease;
             width: calc(100% - var(--sidebar-width));
             max-width: calc(100% - var(--sidebar-width));
             padding-right: 15px;
+        }
+
+        /* Desktop Collapse Styles */
+        @media (min-width: 769px) {
+            body.sidebar-collapsed .sidebar {
+                transform: translateX(-100%);
+            }
+            body.sidebar-collapsed .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 0 0 100% !important;
+            }
         }
 
         /* Card styling */
@@ -278,6 +291,29 @@
             color: #333;
             cursor: pointer;
             padding: 5px 10px;
+        }
+
+        /* Desktop Toggle Button */
+        .desktop-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #333;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin-right: 15px;
+            transition: color 0.3s;
+        }
+
+        .desktop-toggle:hover {
+            color: var(--pmi-primary);
+        }
+
+        @media (min-width: 769px) {
+            .desktop-toggle {
+                display: block;
+            }
         }
 
         /* Overlay for mobile */
@@ -594,6 +630,9 @@
                         <button class="mobile-toggle" id="navbarToggle">
                             <i class="fas fa-bars"></i>
                         </button>
+                        <button class="desktop-toggle" id="desktopToggle" title="Sembunyikan/Tampilkan Sidebar">
+                            <i class="fas fa-bars"></i>
+                        </button>
                         <span class="navbar-brand">@yield('title')</span>
                         <div class="navbar-nav ms-auto align-items-center gap-2">
                             @auth
@@ -653,7 +692,9 @@
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             const sidebarToggle = document.getElementById('sidebarToggle');
             const navbarToggle = document.getElementById('navbarToggle');
+            const desktopToggle = document.getElementById('desktopToggle');
 
+            // Mobile toggle
             function toggleSidebar() {
                 sidebar.classList.toggle('show');
                 sidebarOverlay.classList.toggle('show');
@@ -662,6 +703,16 @@
             function closeSidebar() {
                 sidebar.classList.remove('show');
                 sidebarOverlay.classList.remove('show');
+            }
+
+            // Desktop toggle
+            function toggleDesktopSidebar() {
+                document.body.classList.toggle('sidebar-collapsed');
+            }
+
+            // Toggle buttons
+            if (desktopToggle) {
+                desktopToggle.addEventListener('click', toggleDesktopSidebar);
             }
 
             // Toggle buttons
