@@ -189,10 +189,11 @@
                                             <span class="badge bg-secondary rounded-pill px-3 py-2 shadow-sm"><i class="fas fa-clock me-1"></i> Menunggu</span>
                                             @break
                                         @case('disetujui')
+                                        @case('dipinjam')
                                             @if($borrowing->expected_return_date->isPast())
                                                 <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm"><i class="fas fa-times-circle me-1"></i> Terlambat</span>
                                             @else
-                                                <span class="badge bg-warning text-dark rounded-pill px-3 py-2 shadow-sm"><i class="fas fa-hand-holding me-1"></i> Berjalan</span>
+                                                <span class="badge bg-warning text-dark rounded-pill px-3 py-2 shadow-sm"><i class="fas fa-hand-holding me-1"></i> Sedang Dipinjam</span>
                                             @endif
                                             @break
                                         @case('ditolak')
@@ -223,15 +224,6 @@
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0;" title="Tolak">
                                                     <i class="fas fa-times"></i>
-                                                </button>
-                                            </form>
-                                        @elseif($borrowing->status === 'disetujui')
-                                            <form action="{{ route('borrowings.return', $borrowing) }}"
-                                                  method="POST" class="d-inline"
-                                                  onsubmit="return confirm('Konfirmasi pengembalian barang secara manual?')">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm text-white shadow-sm rounded-pill px-3" style="background: linear-gradient(135deg, #e60000, #9b2c9b); border:none;" title="Tandai Kembali">
-                                                    <i class="fas fa-undo me-1"></i> Manual
                                                 </button>
                                             </form>
                                         @endif

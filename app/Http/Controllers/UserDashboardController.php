@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Loan;
 use App\Models\Item;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class UserDashboardController extends Controller
 {
@@ -44,7 +47,20 @@ class UserDashboardController extends Controller
         $availableItems = Item::where('status', 'tersedia')
             ->where('is_loanable', true)
             ->with(['category', 'location'])
-            ->get();
+            ->get()
+            ->groupBy('name')
+            ->map(function ($items) {
+                $first = $items->first();
+                return (object) [
+                    'name'      => $first->name,
+                    'category'  => $first->category,
+                    'location'  => $first->location,
+                    'condition' => $first->condition,
+                    'stock'     => $items->count(),
+                ];
+            })
+            ->values();
+
         return view('user.borrow', compact('availableItems'));
     }
 
@@ -88,5 +104,52 @@ class UserDashboardController extends Controller
         }
 
         return view('user.return', compact('loan'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+        }
+
+        $user->save();
+
+        return back()->with('success', 'Profil berhasil diperbarui!');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = auth()->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->with('error', 'Password saat ini tidak cocok.');
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return back()->with('success', 'Password berhasil diubah!');
     }
 }

@@ -4,381 +4,564 @@
 
 @section('content')
 <style>
-    .modern-card {
-        border-radius: 18px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        border: 1px solid rgba(0,0,0,0.08) !important;
+    /* ── Item Card ── */
+    .item-card {
+        border-radius: 16px;
+        border: 2px solid rgba(0, 0, 0, 0.07);
+        transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+        overflow: hidden;
+        background: #fff;
     }
-    .modern-card-header {
-        background: white;
-        border-radius: 18px 18px 0 0 !important;
-        border-bottom: 1px solid rgba(0,0,0,0.04);
-        padding: 1.5rem;
-    }
-    .item-row {
-        transition: all 0.2s ease;
-    }
-    .item-row:hover {
-        background-color: rgba(230,0,0,0.02) !important;
-    }
-    .action-btn {
-        border-radius: 12px;
-        padding: 10px 20px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    .action-btn:hover {
+    .item-card:hover {
+        border-color: rgba(220, 53, 69, 0.3);
+        box-shadow: 0 8px 24px rgba(220, 53, 69, 0.08);
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(230,0,0,0.15);
+    }
+    .item-card.has-qty {
+        border-color: #dc3545;
+        background: linear-gradient(135deg, #fff 80%, #fff5f5 100%);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.12);
+    }
+
+    /* ── Icon Box ── */
+    .item-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #fff3f3, #ffd6d6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* ── Quantity Controls ── */
+    .qty-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8f9fa;
+        border-radius: 50px;
+        padding: 5px;
+        border: 1.5px solid #e9ecef;
+        margin-top: 14px;
+        transition: border-color 0.2s;
+    }
+    .item-card.has-qty .qty-wrap {
+        border-color: rgba(220, 53, 69, 0.25);
+        background: #fff9f9;
+    }
+    .btn-qty {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: none;
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        background: #fff;
+        color: #495057;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        flex-shrink: 0;
+    }
+    .btn-qty:hover:not(:disabled) {
+        background: #dc3545;
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(220, 53, 69, 0.35);
+        transform: scale(1.08);
+    }
+    .btn-qty:active:not(:disabled) {
+        transform: scale(0.95);
+    }
+    .btn-qty:disabled {
+        opacity: 0.28;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+    .qty-display {
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+        min-width: 0;
+    }
+    .qty-num {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #212529;
+        min-width: 28px;
+        text-align: center;
+        line-height: 1;
+    }
+    .qty-max {
+        font-size: 0.78rem;
+        color: #adb5bd;
+        font-weight: 500;
+    }
+
+    /* ── Stock Warning ── */
+    .stock-warning {
+        display: none;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.78rem;
+        color: #dc3545;
+        margin-top: 8px;
+        padding: 5px 10px;
+        background: rgba(220, 53, 69, 0.06);
+        border-radius: 8px;
+        border-left: 3px solid #dc3545;
+    }
+    .stock-warning.show {
+        display: flex;
+    }
+
+    /* ── Search ── */
+    .search-box {
+        background: #fff;
+        border-radius: 50px;
+        border: 1.5px solid #e9ecef;
+        padding: 10px 20px 10px 44px;
+        font-size: 0.9rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        width: 100%;
+        outline: none;
+        color: #495057;
+    }
+    .search-box:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+    }
+
+    /* ── Sticky Submit Bar ── */
+    .sticky-bar {
+        position: sticky;
+        bottom: 16px;
+        z-index: 200;
+        margin-top: 28px;
+    }
+    .sticky-inner {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
+        padding: 16px 24px;
+        border: 1px solid rgba(0, 0, 0, 0.07);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .submit-btn {
+        background: linear-gradient(135deg, #dc3545, #c41e2e);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 32px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 200px;
+        box-shadow: 0 4px 14px rgba(220, 53, 69, 0.35);
+    }
+    .submit-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.45);
+    }
+    .submit-btn:disabled {
+        background: linear-gradient(135deg, #adb5bd, #9aa0a6);
+        box-shadow: none;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* ── Empty State ── */
+    .no-results {
+        display: none;
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+    .no-results.show { display: block; }
+
+    /* ── Date Card ── */
+    .date-card {
+        border-radius: 16px;
+        border: 1px solid rgba(0, 0, 0, 0.07);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    }
+    .date-card .form-control {
+        border: 1.5px solid #e9ecef;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 0.95rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .date-card .form-control:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
     }
 </style>
 
+{{-- ── Page Header ── --}}
 <div class="row mb-4 fade-in">
-    <div class="col-md-12">
-        <div class="page-header py-4" style="background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%); border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.08);">
-            <div class="d-flex justify-content-between align-items-center px-4">
+    <div class="col-12">
+        <div style="background: #fff; border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.07);">
+            <div class="d-flex justify-content-between align-items-center p-4 flex-wrap gap-3">
                 <div>
-                    <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-plus-circle me-2 text-danger"></i>Pinjam Barang Tersedia</h4>
-                    <p class="text-muted mb-0">Pilih barang yang ingin dipinjam dan tentukan jadwal pengembalian</p>
+                    <h4 class="mb-1 fw-bold text-dark">
+                        <i class="fas fa-hand-holding me-2 text-danger"></i>Pinjam Barang
+                    </h4>
+                    <p class="text-muted mb-0 small">
+                        Masukkan jumlah barang yang ingin dipinjam untuk setiap jenis
+                    </p>
                 </div>
-                <a href="{{ route('user.dashboard') }}" class="btn btn-light border shadow-sm rounded-pill px-4 fw-medium text-dark">
-                    <i class="fas fa-arrow-left me-2"></i> Kembali
+                <a href="{{ route('user.dashboard') }}"
+                   class="btn btn-light border shadow-sm rounded-pill px-4 fw-medium text-dark">
+                    <i class="fas fa-arrow-left me-2"></i>Kembali
                 </a>
             </div>
         </div>
     </div>
 </div>
 
+{{-- ── Flash Messages ── --}}
+@if(session('success'))
+    <div class="alert border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center gap-3"
+         style="background:linear-gradient(135deg,#d4edda,#c3e6cb);color:#155724;">
+        <i class="fas fa-check-circle fs-5"></i>
+        <span>{{ session('success') }}</span>
+    </div>
+@endif
+@if(session('error'))
+    <div class="alert border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center gap-3"
+         style="background:linear-gradient(135deg,#f8d7da,#f5c6cb);color:#721c24;">
+        <i class="fas fa-times-circle fs-5"></i>
+        <span>{{ session('error') }}</span>
+    </div>
+@endif
+@if(session('warning'))
+    <div class="alert border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center gap-3"
+         style="background:linear-gradient(135deg,#fff3cd,#ffeeba);color:#856404;">
+        <i class="fas fa-exclamation-triangle fs-5"></i>
+        <span>{{ session('warning') }}</span>
+    </div>
+@endif
+
 @if($availableItems->count() > 0)
-<form method="POST" action="{{ route('user.borrow.bulk') }}" id="bulkBorrowForm" class="fade-in" style="animation-delay: 0.1s;">
+
+<form method="POST" action="{{ route('user.borrow.quantity') }}" id="borrowForm" novalidate>
     @csrf
-    
-    <!-- Date Selection -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card modern-card border-0">
-                <div class="card-body p-4 bg-light rounded-3">
-                    <div class="row g-4 align-items-end">
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-dark mb-2">
-                                <i class="far fa-calendar-plus me-2 text-success"></i>Tanggal Mulai Pinjam <span class="text-danger">*</span>
-                            </label>
-                            <input type="date" name="borrow_date" class="form-control form-control-lg border-0 shadow-sm rounded-3" 
-                                   required style="font-size: 1rem;" id="borrow_date_input">
-                            <small class="text-muted d-block mt-2"><i class="fas fa-info-circle me-1"></i>Kapan Anda berencana mengambil barang.</small>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-dark mb-2">
-                                <i class="far fa-calendar-times me-2 text-danger"></i>Tenggat Pengembalian <span class="text-danger">*</span>
-                            </label>
-                            <input type="date" name="expected_return_date" class="form-control form-control-lg border-0 shadow-sm rounded-3" 
-                                   required style="font-size: 1rem;" id="return_date_input">
-                            <small class="text-muted d-block mt-2"><i class="fas fa-info-circle me-1"></i>Berlaku serentak untuk semua barang terpilih.</small>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="d-flex gap-2 justify-content-md-end mt-3 mt-md-0 flex-wrap">
-                                <button type="button" class="btn btn-white border border-2 text-primary action-btn bg-white" id="selectAllBtn">
-                                    <i class="fas fa-check-square me-2"></i> Pilih Semua
-                                </button>
-                                <button type="button" class="btn btn-white border border-2 text-secondary action-btn bg-white" id="clearAllBtn">
-                                    <i class="far fa-square me-2"></i> Batal Pilihan
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+
+    {{-- ── Jadwal Peminjaman ── --}}
+    <div class="card date-card border-0 mb-4">
+        <div class="card-body p-4">
+            <h6 class="fw-bold text-dark mb-3">
+                <i class="far fa-calendar-alt me-2 text-danger"></i>Jadwal Peminjaman
+            </h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small text-muted mb-1">
+                        TANGGAL MULAI PINJAM <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" name="borrow_date" id="borrow_date"
+                           class="form-control" required>
+                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i>
+                        Kapan Anda berencana mengambil barang.
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small text-muted mb-1">
+                        TENGGAT PENGEMBALIAN <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" name="expected_return_date" id="expected_return_date"
+                           class="form-control" required>
+                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i>
+                        Berlaku serentak untuk semua barang yang dipinjam.
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Items Table -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card modern-card">
-                <div class="card-header modern-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <div class="d-flex align-items-center">
-                        <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-boxes me-2 text-success"></i>Daftar Inventaris Tersedia</h5>
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 ms-3 border border-success border-opacity-25 d-none d-sm-inline-block">{{ $availableItems->count() }} item tersedia</span>
+    {{-- ── Header + Search ── --}}
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <div>
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="fas fa-boxes me-2 text-success"></i>Daftar Inventaris Tersedia
+            </h5>
+            <small class="text-muted">{{ $availableItems->count() }} jenis barang dapat dipinjam</small>
+        </div>
+        <div class="position-relative" style="max-width: 290px; width: 100%;">
+            <i class="fas fa-search position-absolute text-muted"
+               style="top:50%;left:15px;transform:translateY(-50%);pointer-events:none;font-size:0.85rem;"></i>
+            <input type="text" id="searchInput" class="search-box"
+                   placeholder="Cari nama atau kategori...">
+        </div>
+    </div>
+
+    {{-- ── Items Grid ── --}}
+    <div class="row g-3" id="itemsGrid">
+        @foreach($availableItems as $index => $item)
+        <div class="col-md-6 col-xl-4 item-wrapper"
+             data-search="{{ strtolower($item->name . ' ' . ($item->category->name ?? '') . ' ' . ($item->location->name ?? '')) }}">
+            <div class="card item-card h-100 border-0" id="card-{{ $index }}">
+                <div class="card-body p-4">
+
+                    {{-- Item header --}}
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <div class="item-icon">
+                            <i class="fas fa-cube text-danger" style="font-size:1.1rem;"></i>
+                        </div>
+                        <div class="flex-grow-1" style="min-width:0;">
+                            <div class="fw-bold text-dark mb-1"
+                                 style="font-size:0.92rem;line-height:1.35;word-break:break-word;">
+                                {{ $item->name }}
+                            </div>
+                            <span class="badge bg-light text-secondary border"
+                                  style="font-size:0.7rem;font-weight:500;">
+                                {{ $item->category->name ?? '-' }}
+                            </span>
+                        </div>
                     </div>
-                    
-                    <div class="position-relative" style="max-width: 300px; width: 100%;">
-                        <i class="fas fa-search position-absolute text-muted" style="top: 50%; left: 15px; transform: translateY(-50%);"></i>
-                        <input type="text" id="searchItem" class="form-control rounded-pill ps-5 border-0 shadow-sm bg-light" placeholder="Cari nama barang atau barcode...">
+
+                    {{-- Meta info --}}
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <small class="text-muted" style="font-size:0.8rem;">
+                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                            {{ $item->location->name ?? '-' }}
+                        </small>
+                        <span class="badge rounded-pill px-3"
+                              style="font-size:0.72rem;background:rgba(25,135,84,0.1);color:#198754;border:1px solid rgba(25,135,84,0.2);">
+                            <i class="fas fa-layer-group me-1"></i>{{ $item->stock }} unit tersedia
+                        </span>
                     </div>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0 border-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="px-4 py-3 border-0" style="width: 60px;">
-                                        <input type="checkbox" id="selectAll" class="form-check-input shadow-sm" style="transform: scale(1.2);">
-                                    </th>
-                                    <th class="px-4 py-3 border-0 text-muted fw-semibold">Detail Barang</th>
-                                    <th class="px-4 py-3 border-0 text-muted fw-semibold">Kategori</th>
-                                    <th class="px-4 py-3 border-0 text-muted fw-semibold">Lokasi</th>
-                                    <th class="px-4 py-3 border-0 text-muted fw-semibold">Kondisi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($availableItems as $item)
-                                    <tr class="item-row border-bottom">
-                                        <td class="px-4 py-3">
-                                            <input type="checkbox" name="items[]" value="{{ $item->id }}" 
-                                                   class="form-check-input item-checkbox shadow-sm" 
-                                                   data-item-name="{{ $item->name }}" style="transform: scale(1.2);">
-                                        </td>
-                                        <td class="px-4 py-3">
-                                            <div class="d-flex align-items-center">
-                                                <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3 text-primary shadow-sm" style="width: 45px; height: 45px;">
-                                                    <i class="fas fa-cube fs-5"></i>
-                                                </div>
-                                                <div>
-                                                    <div class="fw-bold text-dark mb-1">{{ $item->name }}</div>
-                                                    @if($item->barcode)
-                                                        <small class="text-muted"><i class="fas fa-barcode me-1"></i>{{ $item->barcode }}</small>
-                                                    @else
-                                                        <small class="text-muted"><i class="fas fa-tag me-1"></i>No Barcode</small>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-4 py-3">
-                                            <span class="badge bg-light border text-dark px-2 py-1">
-                                                {{ $item->category->name ?? '-' }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3">
-                                            <span class="text-muted"><i class="fas fa-map-marker-alt text-danger me-1"></i>{{ $item->location->name ?? '-' }}</span>
-                                        </td>
-                                        <td class="px-4 py-3">
-                                            <span class="badge bg-{{ $item->condition == 'baik' ? 'success' : 'warning' }} bg-opacity-10 text-{{ $item->condition == 'baik' ? 'success' : 'warning' }} border border-{{ $item->condition == 'baik' ? 'success' : 'warning' }} border-opacity-25 rounded-pill px-3 py-1 mb-1 d-inline-block">
-                                                <i class="fas fa-{{ $item->condition == 'baik' ? 'check-circle' : 'exclamation-triangle' }} me-1"></i>{{ ucfirst($item->condition) }}
-                                            </span>
-                                            <!-- Dummy input field just for original js if needed, disabled dynamically -->
-                                            <input type="hidden" name="quantities[{{ $item->id }}]" class="quantity-input" value="1" disabled data-item-id="{{ $item->id }}">
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+
+                    {{-- Quantity Control --}}
+                    <div class="qty-wrap" id="qwrap-{{ $index }}">
+                        <button type="button"
+                                class="btn-qty btn-minus"
+                                data-idx="{{ $index }}"
+                                disabled
+                                aria-label="Kurangi">−</button>
+
+                        <div class="qty-display">
+                            <span class="qty-num" id="qnum-{{ $index }}">0</span>
+                            <span class="qty-max">/ {{ $item->stock }}</span>
+                        </div>
+
+                        <button type="button"
+                                class="btn-qty btn-plus"
+                                data-idx="{{ $index }}"
+                                data-max="{{ $item->stock }}"
+                                aria-label="Tambah">+</button>
                     </div>
-                </div>
-                <div class="card-footer bg-white p-4 border-top-0 d-flex justify-content-between align-items-center flex-wrap gap-3" style="border-radius: 0 0 18px 18px;">
-                    <div class="bg-light px-4 py-2 rounded-pill border">
-                        <span class="text-muted me-2">Item dipilih:</span>
-                        <span id="selectedCount" class="fw-bold text-danger fs-5">0</span>
+
+                    {{-- Warning saat mencapai stok maks --}}
+                    <div class="stock-warning" id="warn-{{ $index }}">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Stok penuh — maks. <strong>{{ $item->stock }}</strong> unit</span>
                     </div>
-                    <button type="submit" class="btn btn-primary action-btn shadow-sm rounded-pill px-4 py-2" id="submitBtn" disabled>
-                        <i class="fas fa-paper-plane me-2"></i> Ajukan Peminjaman
-                    </button>
+
+                    {{-- Hidden form input --}}
+                    <input type="hidden"
+                           name="quantities[{{ $item->name }}]"
+                           value="0"
+                           id="qinput-{{ $index }}"
+                           class="qty-input">
                 </div>
             </div>
+        </div>
+        @endforeach
+    </div>
+
+    {{-- No-results state --}}
+    <div class="no-results" id="noResults">
+        <i class="fas fa-search mb-3" style="font-size:3rem;opacity:0.25;"></i>
+        <p class="mb-0">Tidak ada barang yang cocok dengan pencarian.</p>
+    </div>
+
+    {{-- ── Sticky Submit Bar ── --}}
+    <div class="sticky-bar">
+        <div class="sticky-inner">
+            <div>
+                <div class="text-muted mb-1" style="font-size:0.82rem;font-weight:500;">TOTAL YANG DIPILIH</div>
+                <div class="fw-bold" style="font-size:1.4rem;color:#212529;">
+                    <span id="totalCount">0</span>
+                    <span style="font-size:0.95rem;color:#6c757d;font-weight:400;"> item</span>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                <i class="fas fa-paper-plane me-2"></i>Ajukan Peminjaman
+            </button>
         </div>
     </div>
 </form>
+
 @else
-<div class="row fade-in">
-    <div class="col-md-12">
-        <div class="card modern-card border-0">
-            <div class="card-body text-center py-5">
-                <i class="fas fa-box-open text-muted opacity-50 mb-4" style="font-size: 5rem;"></i>
-                <h4 class="fw-bold text-dark">Tidak Ada Barang Tersedia</h4>
-                <p class="text-muted mb-4 fs-5">Maaf, saat ini seluruh inventaris sedang dipakai atau dalam tahap pemeliharaan.</p>
-                <a href="{{ route('user.dashboard') }}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-medium">
-                    <i class="fas fa-arrow-left me-2"></i> Kembali ke Dashboard
-                </a>
-            </div>
-        </div>
+{{-- ── Empty State ── --}}
+<div class="card border-0 shadow-sm" style="border-radius:18px;">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-box-open text-muted mb-4" style="font-size:5rem;opacity:0.25;"></i>
+        <h4 class="fw-bold text-dark">Tidak Ada Barang Tersedia</h4>
+        <p class="text-muted mb-4">Maaf, saat ini seluruh inventaris sedang dipakai atau dalam pemeliharaan.</p>
+        <a href="{{ route('user.dashboard') }}"
+           class="btn btn-danger rounded-pill px-4 py-2 fw-semibold shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Kembali ke Dashboard
+        </a>
     </div>
 </div>
 @endif
 
-<!-- Info Card -->
-<div class="row mt-4 fade-in" style="animation-delay: 0.2s;">
-    <div class="col-md-12">
-        <div class="alert alert-info border-0 shadow-sm rounded-4 d-flex bg-primary bg-opacity-10 text-dark">
-            <div class="text-primary fs-3 me-3 pt-1">
-                <i class="fas fa-info-circle"></i>
-            </div>
-            <div>
-                <h6 class="fw-bold text-primary mb-2">Panduan Pengajuan Peminjaman:</h6>
-                <ol class="mb-0 text-muted ps-3 lh-lg" style="font-size: 0.95rem;">
-                    <li>Centang kotak di sebelah kiri pada barang yang Anda butuhkan (bisa lebih dari satu).</li>
-                    <li>Isi <strong>Tanggal Mulai Pinjam</strong> — kapan Anda berencana mengambil barang tersebut.</li>
-                    <li>Isi <strong>Tenggat Pengembalian</strong> — berlaku serentak untuk semua barang yang Anda pilih.</li>
-                    <li>Klik tombol biru <strong>"Ajukan Peminjaman"</strong> untuk mengirim pengajuan ke Admin PMI untuk diverifikasi.</li>
-                </ol>
-            </div>
+{{-- ── Panduan ── --}}
+<div class="mt-4 p-4 rounded-4"
+     style="background:linear-gradient(135deg,#eff8ff,#e0f0ff);border:1px solid #bee3f8;">
+    <div class="d-flex gap-3">
+        <i class="fas fa-info-circle text-primary fs-4 pt-1 flex-shrink-0"></i>
+        <div>
+            <h6 class="fw-bold text-primary mb-2">Cara Meminjam</h6>
+            <ol class="mb-0 text-muted ps-3 lh-lg" style="font-size:0.88rem;">
+                <li>Isi <strong>Tanggal Mulai Pinjam</strong> dan <strong>Tenggat Pengembalian</strong>.</li>
+                <li>Tekan tombol <strong>[+]</strong> di setiap jenis barang untuk menambah jumlah yang ingin dipinjam.</li>
+                <li>Tombol <strong>[+]</strong> otomatis nonaktif saat mencapai batas stok yang tersedia.</li>
+                <li>Klik <strong>"Ajukan Peminjaman"</strong> — sistem akan otomatis memilihkan unit barang yang tersedia untuk Anda.</li>
+            </ol>
         </div>
     </div>
 </div>
+
 @endsection
 
 @section('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const selectAllCheckbox = document.getElementById('selectAll');
-    const selectAllBtn = document.getElementById('selectAllBtn');
-    const clearAllBtn = document.getElementById('clearAllBtn');
-    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-    const quantityInputs = document.querySelectorAll('.quantity-input');
-    const selectedCountDisplay = document.getElementById('selectedCount');
-    const submitBtn = document.getElementById('submitBtn');
-    const form = document.getElementById('bulkBorrowForm');
+document.addEventListener('DOMContentLoaded', function () {
 
-    // Select All checkbox
-    if(selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const isChecked = this.checked;
-            itemCheckboxes.forEach(checkbox => {
-                checkbox.checked = isChecked;
-                const row = checkbox.closest('tr');
-                const quantityInput = row.querySelector('.quantity-input');
-                if(quantityInput) quantityInput.disabled = !isChecked;
-            });
-            updateSelectedCount();
+    const submitBtn  = document.getElementById('submitBtn');
+    const totalEl    = document.getElementById('totalCount');
+    const searchInput = document.getElementById('searchInput');
+    const noResults  = document.getElementById('noResults');
+    const today      = new Date().toISOString().split('T')[0];
+
+    // ── Set min date ──
+    const borrowDateEl  = document.getElementById('borrow_date');
+    const returnDateEl  = document.getElementById('expected_return_date');
+    if (borrowDateEl)  borrowDateEl.min  = today;
+    if (returnDateEl)  returnDateEl.min  = today;
+    if (borrowDateEl) {
+        borrowDateEl.addEventListener('change', function () {
+            if (returnDateEl) returnDateEl.min = this.value || today;
         });
     }
 
-    // Select All button
-    if(selectAllBtn) {
-        selectAllBtn.addEventListener('click', function() {
-            itemCheckboxes.forEach(checkbox => {
-                checkbox.checked = true;
-                const row = checkbox.closest('tr');
-                const quantityInput = row.querySelector('.quantity-input');
-                if(quantityInput) quantityInput.disabled = false;
-            });
-            if(selectAllCheckbox) selectAllCheckbox.checked = true;
-            updateSelectedCount();
+    // ── Update grand total ──
+    function updateTotal() {
+        let total = 0;
+        document.querySelectorAll('.qty-input').forEach(inp => {
+            total += parseInt(inp.value || 0);
         });
+        totalEl.textContent = total;
+        submitBtn.disabled  = total === 0;
     }
 
-    // Clear All button
-    if(clearAllBtn) {
-        clearAllBtn.addEventListener('click', function() {
-            itemCheckboxes.forEach(checkbox => {
-                checkbox.checked = false;
-                const row = checkbox.closest('tr');
-                const quantityInput = row.querySelector('.quantity-input');
-                if(quantityInput) {
-                    quantityInput.disabled = true;
-                    quantityInput.value = 1;
-                }
-            });
-            if(selectAllCheckbox) selectAllCheckbox.checked = false;
-            updateSelectedCount();
-        });
-    }
+    // ── Plus buttons ──
+    document.querySelectorAll('.btn-plus').forEach(function (plusBtn) {
+        plusBtn.addEventListener('click', function () {
+            const idx    = this.dataset.idx;
+            const max    = parseInt(this.dataset.max);
+            const input  = document.getElementById('qinput-' + idx);
+            const numEl  = document.getElementById('qnum-'   + idx);
+            const minBtn = document.querySelector('.btn-minus[data-idx="' + idx + '"]');
+            const warn   = document.getElementById('warn-' + idx);
+            const card   = document.getElementById('card-' + idx);
 
-    // Individual checkbox change
-    itemCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const row = this.closest('tr');
-            const quantityInput = row.querySelector('.quantity-input');
-            if(quantityInput) {
-                quantityInput.disabled = !this.checked;
-                if (!this.checked) {
-                    quantityInput.value = 1;
+            let cur = parseInt(input.value || 0);
+            if (cur < max) {
+                cur++;
+                input.value      = cur;
+                numEl.textContent = cur;
+                minBtn.disabled  = false;
+                card.classList.toggle('has-qty', cur > 0);
+
+                if (cur >= max) {
+                    this.disabled = true;
+                    if (warn) warn.classList.add('show');
+                } else {
+                    if (warn) warn.classList.remove('show');
                 }
             }
-
-            // Update select all checkbox state
-            if(selectAllCheckbox) {
-                const allChecked = Array.from(itemCheckboxes).every(cb => cb.checked);
-                const anyChecked = Array.from(itemCheckboxes).some(cb => cb.checked);
-                selectAllCheckbox.checked = allChecked;
-                selectAllCheckbox.indeterminate = anyChecked && !allChecked;
-            }
-
-            updateSelectedCount();
+            updateTotal();
         });
     });
 
-    // Update selected count
-    function updateSelectedCount() {
-        if(selectedCountDisplay) {
-            const count = Array.from(itemCheckboxes).filter(cb => cb.checked).length;
-            selectedCountDisplay.textContent = count;
-        }
-        if(submitBtn) {
-            submitBtn.disabled = Array.from(itemCheckboxes).filter(cb => cb.checked).length === 0;
-        }
+    // ── Minus buttons ──
+    document.querySelectorAll('.btn-minus').forEach(function (minBtn) {
+        minBtn.addEventListener('click', function () {
+            const idx    = this.dataset.idx;
+            const input  = document.getElementById('qinput-' + idx);
+            const numEl  = document.getElementById('qnum-'   + idx);
+            const plusBtn = document.querySelector('.btn-plus[data-idx="' + idx + '"]');
+            const warn   = document.getElementById('warn-' + idx);
+            const card   = document.getElementById('card-' + idx);
+
+            let cur = parseInt(input.value || 0);
+            if (cur > 0) {
+                cur--;
+                input.value       = cur;
+                numEl.textContent = cur;
+                this.disabled     = cur === 0;
+                plusBtn.disabled  = false;
+                card.classList.toggle('has-qty', cur > 0);
+                if (warn) warn.classList.remove('show');
+            }
+            updateTotal();
+        });
+    });
+
+    // ── Search filter ──
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            const term     = this.value.toLowerCase().trim();
+            let anyVisible = false;
+
+            document.querySelectorAll('.item-wrapper').forEach(function (wrapper) {
+                const txt   = wrapper.dataset.search || '';
+                const match = !term || txt.includes(term);
+                wrapper.style.display = match ? '' : 'none';
+                if (match) anyVisible = true;
+            });
+
+            if (noResults) noResults.classList.toggle('show', !anyVisible);
+        });
     }
 
-    // Form validation
+    // ── Form submit validation ──
+    const form = document.getElementById('borrowForm');
     if (form) {
-        form.addEventListener('submit', function(e) {
-            const checkedItems = Array.from(itemCheckboxes).filter(cb => cb.checked);
-            
-            if (checkedItems.length === 0) {
+        form.addEventListener('submit', function (e) {
+            const bd = borrowDateEl ? borrowDateEl.value : '';
+            const rd = returnDateEl ? returnDateEl.value : '';
+
+            if (!bd) {
                 e.preventDefault();
-                alert('Pilih minimal satu barang untuk dipinjam!');
+                alert('Pilih tanggal mulai pinjam terlebih dahulu!');
                 return;
             }
-
-            const borrowDateInput = document.getElementById('borrow_date_input');
-            const returnDateInput = document.getElementById('return_date_input');
-
-            if (!borrowDateInput || !borrowDateInput.value) {
+            if (!rd) {
                 e.preventDefault();
-                alert('Pilih tanggal mulai pinjam!');
+                alert('Pilih tanggal pengembalian terlebih dahulu!');
                 return;
             }
-
-            if (!returnDateInput || !returnDateInput.value) {
-                e.preventDefault();
-                alert('Pilih tanggal pengembalian!');
-                return;
-            }
-
-            if (returnDateInput.value <= borrowDateInput.value) {
+            if (rd <= bd) {
                 e.preventDefault();
                 alert('Tanggal pengembalian harus setelah tanggal mulai pinjam!');
                 return;
             }
-
-            // Show confirmation
-            const itemNames = checkedItems.map(cb => cb.dataset.itemName).join(', ');
-            if (!confirm(`Anda akan mengajukan peminjaman untuk ${checkedItems.length} item: ${itemNames}.\nLanjutkan?`)) {
-                e.preventDefault();
-            }
-        });
-    }
-
-    // Search filter logic
-    const searchInput = document.getElementById('searchItem');
-    const itemRows = document.querySelectorAll('.item-row');
-
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase().trim();
-
-            itemRows.forEach(row => {
-                const badgeElement = row.querySelector('.fw-bold.text-dark');
-                const pElement = row.querySelector('small.text-muted');
-                const categoryElement = row.querySelector('td:nth-child(3) .badge');
-                
-                const itemName = badgeElement ? badgeElement.textContent.toLowerCase() : '';
-                const itemBarcode = pElement ? pElement.textContent.toLowerCase() : '';
-                const itemCategory = categoryElement ? categoryElement.textContent.toLowerCase() : '';
-                
-                if (itemName.includes(searchTerm) || itemBarcode.includes(searchTerm) || itemCategory.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                    // Uncheck hidden items
-                    const checkbox = row.querySelector('.item-checkbox');
-                    if(checkbox && checkbox.checked) {
-                        checkbox.checked = false;
-                        checkbox.dispatchEvent(new Event('change'));
-                    }
-                }
-            });
-
-            // Update selectAll checked state based on visible items
-            updateSelectedCount();
         });
     }
 });

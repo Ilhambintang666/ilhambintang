@@ -74,58 +74,76 @@ class LoanController extends Controller
     }
 
     /**
-     * Bulk borrow multiple items at once
+     * Bulk borrow by quantity per item name.
+     * quantities[item_name] = qty
      */
-    public function bulkBorrow(Request $request)
+    public function bulkBorrowByQuantity(Request $request)
     {
         $request->validate([
-            'items'                => 'required|array|min:1',
-            'items.*'              => 'exists:items,id',
+            'quantities'           => 'required|array|min:1',
             'borrow_date'          => 'required|date',
             'expected_return_date' => 'required|date|after:borrow_date',
         ]);
 
-        $items = $request->items;
-        $quantities = $request->quantities ?? [];
-        $createdLoans = [];
-        $failedItems = [];
+        $createdLoans  = [];
+        $failedItems   = [];
+        $totalCreated  = 0;
 
-        foreach ($items as $itemId) {
-            $item = Item::find($itemId);
+        // Group creation flag
+        $loanGroup = null;
 
-            // Cek apakah barang bisa dipinjam
-            if (!$item->is_loanable) {
-                $failedItems[] = $item->name . ' (barang paten, tidak dapat dipinjam)';
+        foreach ($request->quantities as $itemName => $qty) {
+            $qty = (int) $qty;
+            if ($qty <= 0) {
                 continue;
             }
 
-            // Check if item is available
-            if ($item->status !== 'tersedia') {
-                $failedItems[] = $item->name . ' (tidak tersedia)';
+            // Ambil unit tersedia berdasarkan nama barang
+            $units = Item::where('name', $itemName)
+                ->where('status', 'tersedia')
+                ->where('is_loanable', true)
+                ->limit($qty)
+                ->get();
+
+            if ($units->count() === 0) {
+                $failedItems[] = "{$itemName} (tidak tersedia)";
                 continue;
             }
 
-            // Create loan record
-            Loan::create([
-                'user_id'              => auth()->id(),
-                'item_id'              => $itemId,
-                'status'               => 'pending',
-                'borrow_date'          => $request->borrow_date,
-                'expected_return_date' => $request->expected_return_date,
-            ]);
+            // Create LoanGroup once if we actually have items to borrow
+            if (!$loanGroup) {
+                $loanGroup = \App\Models\LoanGroup::create([
+                    'user_id'              => auth()->id(),
+                    'borrow_date'          => $request->borrow_date,
+                    'expected_return_date' => $request->expected_return_date,
+                    'status'               => 'pending',
+                ]);
+            }
 
-            $createdLoans[] = $item->name;
+            // Buat loan record untuk tiap unit, kaitkan ke grup
+            foreach ($units as $unit) {
+                Loan::create([
+                    'loan_group_id'        => $loanGroup->id,
+                    'user_id'              => auth()->id(),
+                    'item_id'              => $unit->id,
+                    'status'               => 'pending',
+                    'borrow_date'          => $request->borrow_date,
+                    'expected_return_date' => $request->expected_return_date,
+                ]);
+                $totalCreated++;
+            }
+
+            $createdLoans[] = $itemName . ' (' . $units->count() . ' unit)';
         }
 
-        // Prepare response message
-        if (count($createdLoans) > 0 && count($failedItems) === 0) {
+        if ($totalCreated > 0 && count($failedItems) === 0) {
             return redirect()->route('user.my-borrowings')
-                ->with('success', count($createdLoans) . ' peminjaman berhasil diajukan: ' . implode(', ', $createdLoans));
-        } elseif (count($createdLoans) > 0 && count($failedItems) > 0) {
+                ->with('success', "✅ {$totalCreated} peminjaman berhasil diajukan dan menunggu persetujuan admin.");
+        } elseif ($totalCreated > 0 && count($failedItems) > 0) {
             return redirect()->route('user.my-borrowings')
-                ->with('warning', count($createdLoans) . ' peminjaman berhasil diajukan, namun ' . count($failedItems) . ' gagal: ' . implode(', ', $failedItems));
+                ->with('warning', "{$totalCreated} peminjaman berhasil diajukan. Catatan: " . implode('; ', $failedItems));
         } else {
-            return back()->with('error', 'Gagal mengajukan peminjaman. Semua barang yang dipilih tidak tersedia.');
+            return back()->with('error', 'Gagal mengajukan peminjaman. Tidak ada barang yang tersedia.');
         }
     }
 

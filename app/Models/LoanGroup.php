@@ -5,25 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Loan extends Model
+class LoanGroup extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'loan_group_id',
         'user_id',
-        'item_id',
-        'status',
         'borrow_date',
         'expected_return_date',
-        'return_photo',
-        'returned_at'
+        'status',
+        'approved_at',
     ];
 
     protected $casts = [
         'borrow_date' => 'date',
         'expected_return_date' => 'date',
-        'returned_at' => 'datetime',
         'approved_at' => 'datetime',
     ];
 
@@ -32,13 +28,8 @@ class Loan extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function item()
+    public function loans()
     {
-        return $this->belongsTo(Item::class);
-    }
-
-    public function loanGroup()
-    {
-        return $this->belongsTo(LoanGroup::class);
+        return $this->hasMany(Loan::class);
     }
 }

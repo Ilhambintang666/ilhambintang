@@ -58,8 +58,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/profile', [App\Http\Controllers\UserDashboardController::class, 'profile'])->name('profile');
         Route::post('/borrow', [App\Http\Controllers\LoanController::class, 'borrow'])->name('borrow.submit');
         Route::post('/borrow/bulk', [App\Http\Controllers\LoanController::class, 'bulkBorrow'])->name('borrow.bulk');
+        Route::post('/borrow/quantity', [App\Http\Controllers\LoanController::class, 'bulkBorrowByQuantity'])->name('borrow.quantity');
         Route::post('/loans/{loan}/return', [App\Http\Controllers\LoanController::class, 'submitReturn'])->name('return');
         Route::post('/loans/bulk-return', [App\Http\Controllers\LoanController::class, 'bulkReturn'])->name('loans.bulk-return');
+        Route::post('/profile/update', [App\Http\Controllers\UserDashboardController::class, 'updateProfile'])->name('profile.update');
+        Route::post('/profile/password', [App\Http\Controllers\UserDashboardController::class, 'updatePassword'])->name('profile.password');
     });
 
     // Loan return routes
@@ -95,8 +98,8 @@ Route::middleware(['auth'])->group(function () {
         // Peminjaman routes
         Route::get('/peminjaman', [AdminLoanController::class, 'index'])->name('peminjaman.index');
         Route::get('/pengembalian-pending', [AdminLoanController::class, 'returnIndex'])->name('peminjaman.returns');
-        Route::post('/peminjaman/{id}/approve', [AdminLoanController::class, 'approve'])->name('peminjaman.approve');
-        Route::post('/peminjaman/{id}/reject', [AdminLoanController::class, 'reject'])->name('peminjaman.reject');
+        Route::post('/peminjaman/group/{id}/approve', [AdminLoanController::class, 'approveGroup'])->name('peminjaman.group.approve');
+        Route::post('/peminjaman/group/{id}/reject', [AdminLoanController::class, 'rejectGroup'])->name('peminjaman.group.reject');
         Route::post('/peminjaman/{id}/confirm-return', [AdminLoanController::class, 'confirmReturn'])->name('peminjaman.confirm-return');
         
         // Return approval/rejection

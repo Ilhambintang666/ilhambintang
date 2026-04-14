@@ -104,10 +104,22 @@
                                             </td>
                                             <td class="px-4 py-3">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3 text-secondary" style="width: 40px; height: 40px;">
+                                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3 text-secondary flex-shrink-0" style="width: 40px; height: 40px;">
                                                         <i class="fas fa-box"></i>
                                                     </div>
-                                                    <div class="fw-bold text-dark">{{ $loan->item->name }}</div>
+                                                    <div>
+                                                        <div class="fw-bold text-dark mb-1">{{ $loan->item->name }}</div>
+                                                        @if($loan->item->barcode)
+                                                            <span class="badge px-2 py-1 rounded-2"
+                                                                  style="background:rgba(13,110,253,0.07);color:#0d6efd;border:1px solid rgba(13,110,253,0.18);font-size:0.72rem;letter-spacing:0.5px;font-family:monospace;font-weight:600;">
+                                                                <i class="fas fa-barcode me-1" style="font-size:0.65rem;"></i>{{ $loan->item->barcode }}
+                                                            </span>
+                                                        @else
+                                                            <span class="text-muted" style="font-size:0.75rem;">
+                                                                <i class="fas fa-minus me-1"></i>Tanpa kode
+                                                            </span>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td class="px-4 py-3">

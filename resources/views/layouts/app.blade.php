@@ -605,7 +605,7 @@
                                 <i class="fas fa-history me-2"></i> <span class="nav-text">Daftar Transaksi</span>
                             </a>
                             @php
-                                $pendingLoans = \App\Models\Loan::where('status', 'pending')->count();
+                                $pendingLoans = \App\Models\LoanGroup::where('status', 'pending')->count();
                                 $pendingReturns = \App\Models\Loan::where('status', 'return_pending')->count();
                             @endphp
                             <a class="nav-link d-flex justify-content-between align-items-center {{ request()->routeIs('admin.peminjaman.index') ? 'active' : '' }}"
@@ -667,8 +667,12 @@
                             @auth
                                 <!-- User Info -->
                                 <div class="user-info" data-name="{{ auth()->user()->name }}">
-                                    <div class="user-avatar">
-                                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                    <div class="user-avatar overflow-hidden">
+                                        @if(auth()->user()->avatar)
+                                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" class="w-100 h-100" style="object-fit: cover;">
+                                        @else
+                                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                        @endif
                                     </div>
                                     <div class="user-details">
                                         <div class="user-name">{{ auth()->user()->name }}</div>

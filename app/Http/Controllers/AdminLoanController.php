@@ -10,11 +10,29 @@ class AdminLoanController extends Controller
 {
     public function index()
     {
-        $loans = Loan::with(['user', 'item'])
+        $groups = \App\Models\LoanGroup::with(['user', 'loans.item'])
             ->where('status', 'pending')
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('auth.admin.peminjaman.index', compact('loans'));
+
+        $stockItems = \App\Models\Item::where('is_loanable', true)
+            ->with(['category', 'location'])
+            ->get()
+            ->groupBy('name')
+            ->map(function ($items) {
+                $first = $items->first();
+                return (object) [
+                    'name' => $first->name,
+                    'category' => $first->category,
+                    'location' => $first->location,
+                    'available_stock' => $items->where('status', 'tersedia')->count(),
+                    'borrowed_stock' => $items->where('status', 'dipinjam')->count(),
+                    'total_stock' => $items->count(),
+                ];
+            })
+            ->values();
+
+        return view('auth.admin.peminjaman.index', compact('groups', 'stockItems'));
     }
 
     public function returnIndex()
@@ -26,31 +44,36 @@ class AdminLoanController extends Controller
         return view('auth.admin.peminjaman.returns', compact('loans'));
     }
 
-    public function approve($id)
+    public function approveGroup($id)
     {
-        $loan = Loan::findOrFail($id);
-        $loan->update(['status' => 'approved', 'approved_at' => now()]);
-        $loan->item->update(['status' => 'dipinjam']);
+        $group = \App\Models\LoanGroup::with('loans.item', 'user')->findOrFail($id);
+        $group->update(['status' => 'approved', 'approved_at' => now()]);
 
-        // Create borrowing record
-        Borrowing::create([
-            'borrower_name' => $loan->user->name,
-            'item_id' => $loan->item_id,
-            'borrow_date' => now()->toDateString(),
-            'expected_return_date' => $loan->expected_return_date,
-            'status' => 'dipinjam',
-            'notes' => 'Approved loan request'
-        ]);
+        foreach ($group->loans as $loan) {
+            $loan->update(['status' => 'approved', 'approved_at' => now()]);
+            $loan->item->update(['status' => 'dipinjam']);
 
-        return back()->with('success', 'Peminjaman disetujui');
+            // Create borrowing record per item for legacy compatibility
+            Borrowing::create([
+                'borrower_name' => $group->user->name,
+                'item_id' => $loan->item_id,
+                'borrow_date' => $group->borrow_date,
+                'expected_return_date' => $group->expected_return_date,
+                'status' => 'dipinjam',
+                'notes' => 'Approved loan request group'
+            ]);
+        }
+
+        return back()->with('success', count($group->loans) . ' barang dalam transaksi ini berhasil disetujui.');
     }
 
-    public function reject($id)
+    public function rejectGroup($id)
     {
-        $loan = Loan::findOrFail($id);
-        $loan->update(['status' => 'rejected']);
+        $group = \App\Models\LoanGroup::findOrFail($id);
+        $group->update(['status' => 'rejected']);
+        $group->loans()->update(['status' => 'rejected']);
 
-        return back()->with('success', 'Peminjaman ditolak');
+        return back()->with('success', 'Transaksi peminjaman ditolak.');
     }
 
     public function confirmReturn($id)
@@ -61,6 +84,19 @@ class AdminLoanController extends Controller
             'returned_at' => now()
         ]);
         $loan->item->update(['status' => 'tersedia']);
+
+        // Sync with Borrowing table (Daftar Transaksi)
+        $borrowing = Borrowing::where('item_id', $loan->item_id)
+            ->where('borrower_name', $loan->user->name)
+            ->whereIn('status', ['dipinjam', 'disetujui'])
+            ->first();
+            
+        if ($borrowing) {
+            $borrowing->update([
+                'status' => 'dikembalikan',
+                'return_date' => now()
+            ]);
+        }
 
         return back()->with('success', 'Pengembalian dikonfirmasi');
     }
@@ -77,6 +113,19 @@ class AdminLoanController extends Controller
             'returned_at' => now()
         ]);
         $loan->item->update(['status' => 'tersedia']);
+
+        // Sync with Borrowing table (Daftar Transaksi)
+        $borrowing = Borrowing::where('item_id', $loan->item_id)
+            ->where('borrower_name', $loan->user->name)
+            ->whereIn('status', ['dipinjam', 'disetujui'])
+            ->first();
+            
+        if ($borrowing) {
+            $borrowing->update([
+                'status' => 'dikembalikan',
+                'return_date' => now()
+            ]);
+        }
 
         return back()->with('success', 'Pengembalian disetujui');
     }

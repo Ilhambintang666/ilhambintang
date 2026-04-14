@@ -78,6 +78,7 @@ class BorrowingController extends Controller
             ->whereHas('user', function($query) use ($borrowing) {
                 $query->where('name', $borrowing->borrower_name);
             })
+            ->whereDate('borrow_date', \Carbon\Carbon::parse($borrowing->borrow_date))
             ->orderBy('created_at', 'desc')
             ->first();
 
@@ -138,8 +139,8 @@ class BorrowingController extends Controller
             return back()->with('error', 'Barang sudah dikembalikan!');
         }
 
-        if ($borrowing->status !== 'disetujui') {
-            return back()->with('error', 'Peminjaman belum disetujui!');
+        if (!in_array($borrowing->status, ['disetujui', 'dipinjam'])) {
+            return back()->with('error', 'Peminjaman belum aktif/disetujui!');
         }
 
         $now = Carbon::now();
@@ -153,6 +154,22 @@ class BorrowingController extends Controller
 
         // Update item status back to available
         $borrowing->item->update(['status' => 'tersedia']);
+
+        // Sync with Loan table if it exists (legacy compatibility)
+        $loan = \App\Models\Loan::where('item_id', $borrowing->item_id)
+            ->whereHas('user', function($q) use ($borrowing) {
+                $q->where('name', $borrowing->borrower_name);
+            })
+            ->whereIn('status', ['dipinjam', 'approved'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($loan) {
+            $loan->update([
+                'status' => 'returned',
+                'returned_at' => $now
+            ]);
+        }
 
         $message = $status === 'terlambat' ?
                   'Barang berhasil dikembalikan (TERLAMBAT)!' :
@@ -179,7 +196,7 @@ class BorrowingController extends Controller
 
         // Validate that all borrowings are approved and not yet returned
         $invalidBorrowings = $borrowings->filter(function($b) {
-            return $b->status !== 'disetujui';
+            return !in_array($b->status, ['disetujui', 'dipinjam']);
         });
 
         if ($invalidBorrowings->count() > 0) {
@@ -235,7 +252,7 @@ class BorrowingController extends Controller
         $borrowerName = $request->borrower_name;
         
         $borrowings = Borrowing::where('borrower_name', $borrowerName)
-            ->where('status', 'disetujui')
+            ->whereIn('status', ['disetujui', 'dipinjam'])
             ->with(['item', 'item.category'])
             ->get();
 
@@ -286,7 +303,7 @@ class BorrowingController extends Controller
         $borrowings = Borrowing::whereHas('item', function($query) use ($categoryId) {
                 $query->where('category_id', $categoryId);
             })
-            ->where('status', 'disetujui')
+            ->whereIn('status', ['disetujui', 'dipinjam'])
             ->with(['item', 'item.category'])
             ->get();
 

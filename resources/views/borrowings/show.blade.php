@@ -10,16 +10,6 @@
         <p class="text-muted mb-0 small">Informasi lengkap data peminjaman barang</p>
     </div>
     <div class="d-flex gap-2">
-        @if($borrowing->status === 'dipinjam')
-            <form action="{{ route('borrowings.return', $borrowing) }}"
-                  method="POST" class="d-inline"
-                  onsubmit="return confirm('Konfirmasi pengembalian barang?')">
-                @csrf
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-undo me-1"></i>Kembalikan
-                </button>
-            </form>
-        @endif
         <a href="{{ route('borrowings.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i>Kembali
         </a>
@@ -228,14 +218,6 @@
                     <a href="{{ route('borrowings.edit', $borrowing) }}" class="btn btn-warning">
                         <i class="fas fa-edit me-1"></i>Edit
                     </a>
-                    <form action="{{ route('borrowings.return', $borrowing) }}"
-                          method="POST" class="d-inline"
-                          onsubmit="return confirm('Konfirmasi pengembalian barang?')">
-                        @csrf
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-undo me-1"></i>Kembalikan Barang
-                        </button>
-                    </form>
                 @endif
             </div>
         </div>
