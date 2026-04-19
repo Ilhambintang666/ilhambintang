@@ -27,15 +27,7 @@
                     <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
                 </select>
             </div>
-            <div class="col-md-2">
-                <label class="form-label text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Jenis Barang</label>
-                <select name="is_loanable" class="form-select border-light bg-light" style="border-radius: 10px; padding: 10px 15px;">
-                    <option value="">Semua Jenis</option>
-                    <option value="1" {{ request('is_loanable') === '1' ? 'selected' : '' }}>Pinjaman</option>
-                    <option value="0" {{ request('is_loanable') === '0' ? 'selected' : '' }}>Aset Tetap</option>
-                </select>
-            </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label class="form-label text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Kondisi</label>
                 <select name="condition" class="form-select border-light bg-light" style="border-radius: 10px; padding: 10px 15px;">
                     <option value="">Semua Kondisi</option>
@@ -44,25 +36,57 @@
                     <option value="dalam_perbaikan" {{ request('condition') == 'dalam_perbaikan' ? 'selected' : '' }}>Perbaikan</option>
                 </select>
             </div>
-            <div class="col-md-3">
-                <label class="form-label text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Pencarian</label>
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Pencarian Barang</label>
                 <div class="input-group">
                     <span class="input-group-text border-light bg-light" style="border-radius: 10px 0 0 10px; border-right: none;">
                         <i class="fas fa-search text-muted"></i>
                     </span>
                     <input type="text" name="search" class="form-control border-light bg-light" 
-                           placeholder="Nama/Barcode..." value="{{ request('search') }}" style="border-radius: 0 10px 10px 0; border-left: none; padding: 10px 15px;">
+                           placeholder="Cari berdasarkan nama atau barcode..." value="{{ request('search') }}" style="border-radius: 0 10px 10px 0; border-left: none; padding: 10px 15px;">
                 </div>
             </div>
             <div class="col-md-2 d-flex align-items-end gap-2">
                 <button type="submit" class="btn btn-dark w-100 shadow-sm" style="border-radius: 10px; padding: 10px 15px; font-weight: 500;">
-                    Filter
+                    Filter Data
                 </button>
-                <a href="{{ route('items.index') }}" class="btn btn-light border-light shadow-sm" style="border-radius: 10px; padding: 10px 15px;">
+                <a href="{{ route('items.index') }}" class="btn btn-light border-light shadow-sm" title="Reset Filter" style="border-radius: 10px; padding: 10px 15px;">
                     <i class="fas fa-redo text-muted"></i>
                 </a>
             </div>
         </form>
+    </div>
+</div>
+
+{{-- Custom Tab Navigation & Lokasi Cepat --}}
+<div class="mb-4">
+    <ul class="nav nav-pills custom-tabs d-flex gap-2" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active item-tab-btn shadow-sm" data-tab="all" type="button">
+                <i class="fas fa-layer-group me-2"></i>Semua Barang
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link item-tab-btn shadow-sm" data-tab="1" type="button">
+                <i class="fas fa-hand-holding me-2 text-success"></i>Barang Pinjaman
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link item-tab-btn shadow-sm" data-tab="0" type="button">
+                <i class="fas fa-cube me-2 text-secondary"></i>Aset Tetap Terpusat
+            </button>
+        </li>
+    </ul>
+    
+    {{-- Location Quick Filters --}}
+    <div class="mt-3 p-3 bg-white rounded-4 shadow-sm border" style="border-color: rgba(0,0,0,0.08) !important;">
+        <p class="text-muted small fw-bold text-uppercase mb-2" style="letter-spacing: 0.5px;"><i class="fas fa-map-marker-alt me-2 text-danger"></i>Filter Lokasi Cepat</p>
+        <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-sm loc-pill active shadow-sm" data-loc="all">Semua Lokasi</button>
+            @foreach($locations as $loc)
+                <button class="btn btn-sm btn-light border loc-pill text-muted hover-shadow" data-loc="{{ $loc->id }}">{{ $loc->name }}</button>
+            @endforeach
+        </div>
     </div>
 </div>
 
@@ -79,7 +103,7 @@
                 <i class="fas fa-trash-alt me-2"></i>Hapus (<span id="selectedCount">0</span>)
             </button>
             <span class="badge rounded-pill px-3 py-2 shadow-sm" style="background: rgba(230, 0, 0, 0.1); color: #e60000; font-weight: 600; border: 1px solid rgba(230, 0, 0, 0.2);">
-                Total: {{ $items->count() }} Barang
+                Tampil: <span id="visibleItemCount">{{ $items->count() }}</span> / Total: {{ $items->count() }}
             </span>
         </div>
     </div>
@@ -93,60 +117,51 @@
                                 <input type="checkbox" id="selectAllItems" class="form-check-input" style="cursor: pointer; transform: scale(1.2);">
                             </th>
                             <th class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 16px; border-bottom: 2px solid #eee;">No</th>
-                            <th class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 16px; border-bottom: 2px solid #eee;">Info Barang</th>
-                            <th class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 16px; border-bottom: 2px solid #eee;">Klasifikasi</th>
-                            <th class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 16px; border-bottom: 2px solid #eee;">Jenis</th>
+                            <th class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 16px; border-bottom: 2px solid #eee;">Info Detail Barang</th>
                             <th class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 16px; border-bottom: 2px solid #eee;">Status & Kondisi</th>
                             <th class="text-uppercase text-muted text-center" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; padding: 16px; border-bottom: 2px solid #eee;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($items as $index => $item)
-                        <tr style="transition: all 0.2s; background: #fff;" class="hover-row">
+                        <tr style="transition: all 0.2s; background: #fff;" class="hover-row item-row" data-is-loanable="{{ $item->is_loanable ? '1' : '0' }}" data-location-id="{{ $item->location_id }}">
                             <td class="text-center" style="border-bottom: 1px solid #f0f0f0;">
                                 <input type="checkbox" class="form-check-input item-checkbox" value="{{ $item->id }}" style="cursor: pointer; transform: scale(1.2);">
                             </td>
                             <td style="border-bottom: 1px solid #f0f0f0;">
-                                <span class="text-muted fw-bold">{{ $index + 1 }}</span>
+                                <span class="text-muted fw-bold serial-number">{{ $index + 1 }}</span>
                             </td>
-                            <td style="border-bottom: 1px solid #f0f0f0; max-width: 250px;">
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-light rounded p-2 me-3 d-flex align-items-center justify-content-center border" style="width: 48px; height: 48px; min-width: 48px;">
-                                        <i class="fas fa-box text-danger" style="font-size: 1.25rem;"></i>
+                            <td style="border-bottom: 1px solid #f0f0f0;">
+                                <div class="d-flex align-items-start">
+                                    <div class="bg-light rounded p-2 me-3 d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px; min-width: 50px;">
+                                        @if($item->is_loanable)
+                                            <i class="fas fa-hand-holding text-success" style="font-size: 1.5rem;" title="Barang Pinjaman"></i>
+                                        @else
+                                            <i class="fas fa-cube text-secondary" style="font-size: 1.5rem;" title="Aset Tetap"></i>
+                                        @endif
                                     </div>
                                     <div>
-                                        <h6 class="mb-0 fw-bold text-truncate" style="color: #2c3e50; max-width: 200px;" title="{{ $item->name }}">{{ $item->name }}</h6>
-                                        <div class="d-flex align-items-center mt-1">
-                                            <code class="bg-light text-secondary px-2 py-0 rounded border small me-2" style="font-size: 0.75rem;">{{ $item->barcode }}</code>
-                                            @if($item->description)
-                                                <small class="text-muted text-truncate d-inline-block" style="max-width: 120px;" title="{{ $item->description }}">{{ $item->description }}</small>
+                                        <h6 class="mb-1 fw-bold" style="color: #2c3e50; font-size: 1.05rem;">
+                                            {{ $item->name }}
+                                            @if($item->is_loanable)
+                                                <span class="badge rounded-pill bg-success ms-2 pb-1" style="font-size: 0.65rem;">Pinjaman</span>
+                                            @else
+                                                <span class="badge rounded-pill ms-2 pb-1" style="background-color: #6c757d; font-size: 0.65rem;">Aset Tetap</span>
                                             @endif
+                                        </h6>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <code class="bg-light text-secondary px-2 py-0 rounded border small me-2" style="font-size: 0.75rem;">{{ $item->barcode }}</code>
+                                            <span class="text-muted small"><strong>{{ $item->total_sejenis }}</strong> unit tersedia di sistem</span>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2 mt-1">
+                                            <span class="badge bg-light text-dark border rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.7rem;">
+                                                <i class="fas fa-tags text-warning me-1"></i> {{ $item->category->name }}
+                                            </span>
+                                            <span class="badge bg-light text-dark border rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.7rem;">
+                                                <i class="fas fa-map-marker-alt text-info me-1"></i> {{ $item->location->name }}
+                                            </span>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td style="border-bottom: 1px solid #f0f0f0;">
-                                <div class="d-flex flex-column gap-1">
-                                    <span class="badge bg-light text-dark border rounded-pill px-2 py-1 align-self-start shadow-sm" style="font-size: 0.7rem;">
-                                        <i class="fas fa-folder text-warning me-1"></i> {{ $item->category->name }}
-                                    </span>
-                                    <span class="badge bg-light text-dark border rounded-pill px-2 py-1 align-self-start shadow-sm" style="font-size: 0.7rem;">
-                                        <i class="fas fa-map-marker-alt text-info me-1"></i> {{ $item->location->name }}
-                                    </span>
-                                </div>
-                            </td>
-                            <td style="border-bottom: 1px solid #f0f0f0;">
-                                @if($item->is_loanable)
-                                    <span class="badge rounded-pill px-3 py-1" style="background: rgba(25, 135, 84, 0.1); color: #198754; font-weight: 600;">
-                                        <i class="fas fa-hand-holding me-1"></i> Pinjaman
-                                    </span>
-                                @else
-                                    <span class="badge rounded-pill px-3 py-1" style="background: rgba(108, 117, 125, 0.1); color: #6c757d; font-weight: 600;">
-                                        <i class="fas fa-cube me-1"></i> Aset Tetap
-                                    </span>
-                                @endif
-                                <div class="mt-2 small">
-                                    <span class="text-muted">Unit: </span><strong class="text-dark">{{ $item->total_sejenis }}</strong>
                                 </div>
                             </td>
                             <td style="border-bottom: 1px solid #f0f0f0;">
@@ -262,6 +277,50 @@
     border-color: #e60000;
 }
 
+/* Custom Tab Navigation */
+.custom-tabs .nav-link {
+    border-radius: 12px;
+    color: #495057 !important;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.custom-tabs .nav-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    color: #212529 !important;
+}
+.custom-tabs .nav-link.active {
+    background: linear-gradient(135deg, #e60000, #b20000) !important;
+    color: #fff !important;
+    border: none;
+}
+.custom-tabs .nav-link.active i {
+    color: #fff !important;
+}
+
+/* Location Pills */
+.loc-pill {
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 6px 16px;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+.loc-pill.active {
+    background: linear-gradient(135deg, #2c3e50, #1a252f) !important;
+    color: #fff !important;
+    border-color: #2c3e50 !important;
+    box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3) !important;
+}
+.loc-pill:hover:not(.active) {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
 select.form-select:focus, input.form-control:focus {
     box-shadow: 0 0 0 0.25rem rgba(230, 0, 0, 0.15);
     border-color: #e60000 !important;
@@ -306,13 +365,85 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', function() {
-            itemCheckboxes.forEach(cb => cb.checked = this.checked);
+            // Only check visible ones
+            document.querySelectorAll('.item-row').forEach(row => {
+                if(row.style.display !== 'none') {
+                    const cb = row.querySelector('.item-checkbox');
+                    if(cb) cb.checked = this.checked;
+                }
+            });
             updateBulkDeleteButton();
         });
     }
 
     itemCheckboxes.forEach(cb => {
         cb.addEventListener('change', updateBulkDeleteButton);
+    });
+
+    // Frontend Filtering Logic
+    let currentTab = 'all';
+    let currentLocation = 'all';
+
+    function applyFilters() {
+        let visibleCount = 0;
+        let serialNum = 1;
+        document.querySelectorAll('.item-row').forEach(row => {
+            let itemLoanable = row.getAttribute('data-is-loanable');
+            let itemLoc = row.getAttribute('data-location-id');
+
+            let matchTab = (currentTab === 'all') || (itemLoanable === currentTab);
+            let matchLoc = (currentLocation === 'all') || (itemLoc === currentLocation);
+            
+            if (matchTab && matchLoc) {
+                row.style.display = '';
+                // Update serial number to maintain continuity
+                let serialEl = row.querySelector('.serial-number');
+                if(serialEl) serialEl.textContent = serialNum++;
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+                // Uncheck if hidden
+                let cb = row.querySelector('.item-checkbox');
+                if(cb && cb.checked) {
+                    cb.checked = false;
+                }
+            }
+        });
+
+        const countSpan = document.getElementById('visibleItemCount');
+        if(countSpan) countSpan.textContent = visibleCount;
+        updateBulkDeleteButton();
+    }
+
+    // Tab Event Listeners
+    document.querySelectorAll('.item-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('.item-tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            currentTab = this.getAttribute('data-tab');
+            applyFilters();
+        });
+    });
+
+    // Location Pill Event Listeners
+    document.querySelectorAll('.loc-pill').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('.loc-pill').forEach(b => b.classList.remove('active', 'btn-danger'));
+            document.querySelectorAll('.loc-pill').forEach(b => {
+                if(b !== this) {
+                    b.classList.add('btn-light', 'text-muted');
+                }
+            });
+            
+            this.classList.remove('btn-light', 'text-muted');
+            this.classList.add('active');
+            
+            currentLocation = this.getAttribute('data-loc');
+            applyFilters();
+        });
     });
 });
 

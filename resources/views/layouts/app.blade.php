@@ -365,6 +365,9 @@
             .main-content {
                 margin-left: 0;
                 padding-top: 60px;
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 0 0 100% !important;
             }
 
             /* Show mobile toggle */
@@ -418,10 +421,30 @@
             .page-header {
                 padding: 15px;
                 margin-bottom: 15px;
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 12px;
+            }
+
+            .page-header > div:last-child {
+                width: 100%;
+                justify-content: flex-start !important;
+                flex-wrap: wrap;
+                column-gap: 8px !important;
+                row-gap: 8px !important;
+            }
+            
+            .page-header > div:last-child > .btn {
+                flex: 1;
+                min-width: fit-content;
+                text-align: center;
+                display: flex;
+                justify-content: center;
+                align-items: center;
             }
 
             .page-header h3 {
-                font-size: 1.1rem;
+                font-size: 1.25rem;
             }
 
             /* Cards mobile */
@@ -438,9 +461,14 @@
                 font-size: 2rem;
             }
 
-            /* Tables mobile */
+            /* Tables mobile auto-responsive */
             .table {
                 font-size: 0.85rem;
+                display: block !important;
+                width: 100% !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+                white-space: nowrap;
             }
 
             .table thead th,
@@ -570,11 +598,6 @@
     <div class="container-fluid">
         <div class="row">
             @auth
-                <!-- Mobile Toggle Button -->
-                <button class="mobile-toggle position-fixed" id="sidebarToggle" style="z-index: 1001;">
-                    <i class="fas fa-bars"></i>
-                </button>
-
                 <!-- Sidebar -->
                 <div class="sidebar" id="sidebar">
                     <div class="sidebar-brand text-center">
@@ -746,11 +769,6 @@
             // Toggle buttons
             if (desktopToggle) {
                 desktopToggle.addEventListener('click', toggleDesktopSidebar);
-            }
-
-            // Toggle buttons
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', toggleSidebar);
             }
             
             if (navbarToggle) {

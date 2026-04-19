@@ -211,39 +211,46 @@
                                     <div>
                                         <h5 class="fw-bold mb-2 text-dark">{{ $loan->item->name }}</h5>
                                         <div class="d-flex flex-wrap gap-3 text-muted small mt-1">
-                                            <span class="d-flex align-items-center">
+                                            <span class="d-flex align-items-center bg-light px-2 py-1 rounded">
                                                 <i class="far fa-calendar-alt text-primary me-2"></i> 
-                                                <span>Pinjam:<br><span class="fw-medium text-dark">{{ \Carbon\Carbon::parse($loan->created_at)->format('d M Y') }}</span></span>
+                                                <span>Pinjam: <span class="fw-medium text-dark">{{ \Carbon\Carbon::parse($loan->created_at)->format('d M Y') }}</span></span>
                                             </span>
-                                            <span class="d-flex align-items-center">
+                                            <span class="d-flex align-items-center bg-light px-2 py-1 rounded">
                                                 <i class="far fa-calendar-check text-danger me-2"></i> 
-                                                <span>Tenggat:<br><span class="fw-medium text-danger">{{ \Carbon\Carbon::parse($loan->expected_return_date)->format('d M Y') }}</span></span>
+                                                <span>Tenggat: <span class="fw-medium text-danger">{{ \Carbon\Carbon::parse($loan->expected_return_date)->format('d M Y') }}</span></span>
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="bg-success bg-opacity-10 text-success px-3 py-1 rounded-pill fw-semibold text-nowrap rounded-pill border border-success border-opacity-25 small">
-                                        <i class="fas fa-check-circle me-1"></i> Disetujui
+                                    <div class="d-flex flex-column align-items-end gap-2">
+                                        <div class="bg-success bg-opacity-10 text-success px-3 py-1 rounded-pill fw-semibold text-nowrap border border-success border-opacity-25 small">
+                                            <i class="fas fa-check-circle me-1"></i> Disetujui
+                                        </div>
+                                        <button class="btn btn-primary btn-sm px-3 rounded-pill border-0 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#returnForm-{{ $loan->id }}" aria-expanded="false" aria-controls="returnForm-{{ $loan->id }}">
+                                            <i class="fas fa-undo me-1"></i> Kembalikan
+                                        </button>
                                     </div>
                                 </div>
                                 
-                                <div class="return-form-bg p-3 rounded-3 mt-3 border">
-                                    <h6 class="small fw-bold text-dark mb-2"><i class="fas fa-undo me-1 text-primary"></i> Form Pengembalian</h6>
-                                    <form method="POST" action="{{ route('user.return', $loan) }}" enctype="multipart/form-data" class="row g-2 align-items-end">
-                                        @csrf
-                                        <div class="col-md-5">
-                                            <label class="form-label small fw-medium mb-1 text-secondary">Foto Kondisi Terkini</label>
-                                            <input type="file" name="return_photo" class="form-control form-control-sm border-0 shadow-sm" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label small fw-medium mb-1 text-secondary">Tanggal Kembali</label>
-                                            <input type="date" name="return_date" class="form-control form-control-sm border-0 shadow-sm" required>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <button type="submit" class="btn btn-primary btn-sm w-100 py-2 fw-medium shadow-sm rounded-3">
-                                                Kembalikan
-                                            </button>
-                                        </div>
-                                    </form>
+                                <div class="collapse" id="returnForm-{{ $loan->id }}">
+                                    <div class="return-form-bg p-3 rounded-3 mt-3 border">
+                                        <h6 class="small fw-bold text-dark mb-2"><i class="fas fa-camera me-1 text-primary"></i> Upload Foto Terkini</h6>
+                                        <form method="POST" action="{{ route('user.return', $loan) }}" enctype="multipart/form-data" class="row g-3 align-items-end">
+                                            @csrf
+                                            <div class="col-md-5 col-sm-12">
+                                                <label class="form-label small fw-medium mb-1 text-secondary">Foto Barang Saat Ini</label>
+                                                <input type="file" name="return_photo" class="form-control form-control-sm border-0 shadow-sm" required>
+                                            </div>
+                                            <div class="col-md-4 col-sm-12">
+                                                <label class="form-label small fw-medium mb-1 text-secondary">Tanggal Kembali</label>
+                                                <input type="date" name="return_date" class="form-control form-control-sm border-0 shadow-sm" required>
+                                            </div>
+                                            <div class="col-md-3 col-sm-12 mt-3 mt-md-0">
+                                                <button type="submit" class="btn btn-success w-100 py-2 fw-medium shadow-sm rounded-3">
+                                                    Konfirmasi
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -295,17 +302,50 @@
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-end">
-                                            <form method="POST" action="{{ route('user.borrow.submit') }}" class="d-flex justify-content-end">
-                                                @csrf
-                                                <input type="hidden" name="item_id" value="{{ $item->id }}">
-                                                <div class="d-flex flex-column gap-1" style="width: 160px;">
-                                                    <input type="date" name="borrow_date" class="form-control form-control-sm border-primary" required title="Tanggal Pinjam" style="font-size: 0.75rem;" placeholder="Tgl Pinjam">
-                                                    <input type="date" name="expected_return_date" class="form-control form-control-sm border-secondary" required title="Tanggal Kembali" style="font-size: 0.75rem;">
-                                                    <button type="submit" class="btn btn-primary btn-sm rounded-3 shadow-sm fw-medium">
-                                                        <i class="fas fa-hand-holding me-1"></i> Pinjam
-                                                    </button>
+                                            <button type="button" class="btn btn-primary btn-sm rounded-pill shadow-sm fw-medium px-3" data-bs-toggle="modal" data-bs-target="#borrowModal-{{ $item->id }}">
+                                                <i class="fas fa-hand-holding me-1"></i> Pinjam
+                                            </button>
+                                            
+                                            <!-- Modal Pinjam -->
+                                            <div class="modal fade" id="borrowModal-{{ $item->id }}" tabindex="-1" aria-labelledby="borrowModalLabel-{{ $item->id }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered text-start">
+                                                    <div class="modal-content border-0 shadow">
+                                                        <div class="modal-header border-bottom-0 pb-0">
+                                                            <h5 class="modal-title fw-bold" id="borrowModalLabel-{{ $item->id }}">Pinjam Barang</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="d-flex align-items-center mb-4 p-3 bg-light rounded-3">
+                                                                <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3 text-primary" style="width: 45px; height: 45px;">
+                                                                    <i class="fas fa-cube fs-5"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="fw-bold text-dark fs-5">{{ $item->name }}</div>
+                                                                    <div class="d-flex align-items-center gap-2 mt-1">
+                                                                        <span class="badge bg-white border text-dark">{{ $item->category->name ?? '-' }}</span>
+                                                                        <small class="text-muted"><i class="fas fa-map-marker-alt me-1 text-danger"></i>{{ $item->location->name ?? 'Gudang' }}</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <form method="POST" action="{{ route('user.borrow.submit') }}">
+                                                                @csrf
+                                                                <input type="hidden" name="item_id" value="{{ $item->id }}">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label small fw-medium text-secondary">Tanggal Pinjam</label>
+                                                                    <input type="date" name="borrow_date" class="form-control" required>
+                                                                </div>
+                                                                <div class="mb-4">
+                                                                    <label class="form-label small fw-medium text-secondary">Rencana Tanggal Kembali</label>
+                                                                    <input type="date" name="expected_return_date" class="form-control" required>
+                                                                </div>
+                                                                <button type="submit" class="btn btn-primary w-100 py-2 fw-medium shadow-sm rounded-3 fs-6">
+                                                                    Konfirmasi Peminjaman
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach

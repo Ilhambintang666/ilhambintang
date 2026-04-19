@@ -41,7 +41,8 @@ class ItemController extends Controller
             $item->total_sejenis = $nameCounts[$item->name] ?? 1;
         }
 
-        return view('items.index', compact('items'));
+        $locations = Location::all();
+        return view('items.index', compact('items', 'locations'));
     }
 
     public function create()

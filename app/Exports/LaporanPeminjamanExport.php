@@ -28,6 +28,7 @@ class LaporanPeminjamanExport implements FromCollection, WithHeadings
                 'Kategori Laporan' => '1. PRE-DIPINJAM',
                 'Tanggal'          => $item->tanggal,
                 'Nama Barang'      => $item->nama_barang,
+                'Barcode / Seri'   => $item->barcode ?? '-',
                 'Jumlah'           => $item->jumlah,
                 'Keterangan'       => $item->keterangan
             ]);
@@ -39,6 +40,7 @@ class LaporanPeminjamanExport implements FromCollection, WithHeadings
                 'Kategori Laporan' => '2. PENGEMBALIAN',
                 'Tanggal'          => $item->tanggal,
                 'Nama Barang'      => $item->nama_barang,
+                'Barcode / Seri'   => $item->barcode ?? '-',
                 'Jumlah'           => $item->jumlah,
                 'Keterangan'       => $item->keterangan
             ]);
@@ -50,6 +52,7 @@ class LaporanPeminjamanExport implements FromCollection, WithHeadings
                 'Kategori Laporan' => '3. ASET DITAMBAHKAN',
                 'Tanggal'          => $item->tanggal,
                 'Nama Barang'      => $item->nama_barang,
+                'Barcode / Seri'   => $item->barcode ?? '-',
                 'Jumlah'           => $item->jumlah,
                 'Keterangan'       => $item->keterangan
             ]);
@@ -64,6 +67,7 @@ class LaporanPeminjamanExport implements FromCollection, WithHeadings
             'Kategori Laporan',
             'Tanggal',
             'Nama Barang',
+            'Barcode / Seri',
             'Jumlah',
             'Keterangan / Detail'
         ];

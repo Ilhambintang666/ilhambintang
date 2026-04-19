@@ -5,43 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Lengkap - PMI Semarang</title>
     <style>
-        @page { margin: 30px; }
+        @page { 
+            margin: 110px 50px 80px 50px; 
+        }
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Helvetica', 'Arial', sans-serif;
             margin: 0;
-            color: #333;
-            font-size: 13px;
+            color: #000;
+            font-size: 11px;
         }
         
-        .header {
+        header {
+            position: fixed;
+            top: -110px;
+            left: -50px;
+            right: -50px;
+            height: 82px;
+        }
+        
+        main {
+            /* Margin handled natively by @page */
+        }
+        .pmi-banner-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0px;
+        }
+        .pmi-banner-table td {
+            height: 70px;
+            padding: 0;
+        }
+        .pmi-banner-beige {
+            width: 100%;
+            height: 12px;
+            background-color: #f0e1d2;
+            margin-bottom: 40px;
+        }
+        
+        .header-text {
             text-align: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e60000;
+            margin-bottom: 40px;
         }
         
-        .header h1 {
-            color: #e60000;
+        .header-text h1 {
+            color: #000;
             margin: 0;
-            font-size: 22px;
+            font-size: 16px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .header p {
-            margin: 5px 0 0;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .period {
-            text-align: left;
-            margin-bottom: 20px;
-            padding: 10px 15px;
-            background-color: #f8f9fa;
-            border-left: 4px solid #e60000;
+            text-decoration: underline;
             font-weight: bold;
-            color: #495057;
+            letter-spacing: 0.5px;
+        }
+        
+        .header-text p {
+            margin: 3px 0 0;
+            font-size: 11px;
+            color: #000;
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: -40px;
+            left: 0px;
+            right: 0px;
+            font-size: 10px;
+            color: #000;
+            line-height: 1.4;
+        }
+        
+        .footer-red {
+            color: #cc0000;
+            font-weight: bold;
         }
         
         .summary-table {
@@ -120,15 +154,7 @@
         table.data-table tr:nth-child(even) {
             background-color: #f8f9fa;
         }
-        
-        .footer {
-            margin-top: 40px;
-            padding-top: 15px;
-            border-top: 1px solid #dee2e6;
-            text-align: right;
-            font-size: 11px;
-            color: #adb5bd;
-        }
+
         
         .empty-state {
             text-align: center;
@@ -141,13 +167,44 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Laporan Inventaris PMI</h1>
-        <p>Palang Merah Indonesia - Cabang Kota Semarang</p>
+    <div class="footer">
+        <span class="footer-red">Markas Palang Merah Indonesia Kota Semarang</span> Jl. Mgr. Sugiyopranoto No. 35 Semarang 50131 - Indonesia<br>
+        Telepon : (024) 3541237, Fax. (024) 3583111 - Email : kota_semarang@pmi.or.id - www.pmikotasemarang.or.id
+    </div>
+
+    <header>
+        <table class="pmi-banner-table">
+            <tr>
+                <td style="background-color: #da251d; width: 35%;"></td>
+                <td style="background-color: #e55347; width: 20%;"></td>
+                <td style="background-color: #f0897e; width: 18%;"></td>
+                <td style="background-color: #f8c9c4; width: 12%;"></td>
+                <td style="background-color: #ffffff; width: 15%; text-align: right; vertical-align: middle; padding-right: 40px;">
+                    <?php 
+                        $path = public_path('images/pmi.png');
+                        if(file_exists($path)) {
+                            $type = pathinfo($path, PATHINFO_EXTENSION);
+                            $data = file_get_contents($path);
+                            $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                            echo '<img src="'.$base64.'" height="50" alt="PMI Logo">';
+                        }
+                    ?>
+                </td>
+            </tr>
+        </table>
+        <div class="pmi-banner-beige"></div>
+    </header>
+
+    <!-- Pengecualian footer dari konten statis -->
+    <main>
+
+    <div class="header-text">
+        <h1>LAPORAN DATA INVENTARIS</h1>
+        <p>Tanggal Cetak: {{ now()->format('d/m/Y H:i') }}</p>
     </div>
     
-    <div class="period">
-        Periode Laporan: {{ \Carbon\Carbon::parse($dari)->format('d F Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d F Y') }}
+    <div style="font-weight: bold; margin-bottom: 15px; text-transform: uppercase;">
+        Periode: {{ \Carbon\Carbon::parse($dari)->format('d F Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d F Y') }}
     </div>
     
     <table class="summary-table">
@@ -186,7 +243,10 @@
                 <tr>
                     <td align="center">{{ $index + 1 }}</td>
                     <td>{{ $item->tanggal }}</td>
-                    <td><strong>{{ $item->nama_barang }}</strong></td>
+                    <td>
+                        <strong>{{ $item->nama_barang }}</strong><br>
+                        <span style="color: #666; font-size: 9px;">SN/Barcode: {{ $item->barcode }}</span>
+                    </td>
                     <td align="center">{{ $item->jumlah }}</td>
                     <td>{{ $item->keterangan }}</td>
                 </tr>
@@ -217,7 +277,10 @@
                 <tr>
                     <td align="center">{{ $index + 1 }}</td>
                     <td>{{ $item->tanggal }}</td>
-                    <td><strong>{{ $item->nama_barang }}</strong></td>
+                    <td>
+                        <strong>{{ $item->nama_barang }}</strong><br>
+                        <span style="color: #666; font-size: 9px;">SN/Barcode: {{ $item->barcode }}</span>
+                    </td>
                     <td align="center">{{ $item->jumlah }}</td>
                     <td>{{ $item->keterangan }}</td>
                 </tr>
@@ -248,7 +311,10 @@
                 <tr>
                     <td align="center">{{ $index + 1 }}</td>
                     <td>{{ $item->tanggal }}</td>
-                    <td><strong>{{ $item->nama_barang }}</strong></td>
+                    <td>
+                        <strong>{{ $item->nama_barang }}</strong><br>
+                        <span style="color: #666; font-size: 9px;">SN/Barcode: {{ $item->barcode }}</span>
+                    </td>
                     <td align="center">{{ $item->jumlah }}</td>
                     <td>{!! nl2br(e($item->keterangan)) !!}</td>
                 </tr>
@@ -260,8 +326,6 @@
         @endif
     </div>
     
-    <div class="footer">
-        Dokumen ini digenerate secara otomatis oleh Sistem Inventaris PMI Kota Semarang pada {{ now()->format('d/m/Y H:i:s') }}
-    </div>
+    </main>
 </body>
 </html>

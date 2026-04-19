@@ -24,6 +24,7 @@ class LaporanBarangController extends Controller
             return (object) [
                 'tanggal' => Carbon::parse($b->borrow_date)->format('d-m-Y'),
                 'nama_barang' => $b->item ? $b->item->name : 'N/A',
+                'barcode' => $b->item ? $b->item->barcode : '-',
                 'jumlah' => 1,
                 'keterangan' => 'Dipinjam oleh: ' . $b->borrower_name
             ];
@@ -38,6 +39,7 @@ class LaporanBarangController extends Controller
             return (object) [
                 'tanggal' => Carbon::parse($b->return_date)->format('d-m-Y'),
                 'nama_barang' => $b->item ? $b->item->name : 'N/A',
+                'barcode' => $b->item ? $b->item->barcode : '-',
                 'jumlah' => 1,
                 'keterangan' => 'Dikembalikan oleh: ' . $b->borrower_name
             ];
@@ -68,6 +70,7 @@ class LaporanBarangController extends Controller
             return (object) [
                 'tanggal' => $tgl,
                 'nama_barang' => $i->name,
+                'barcode' => $i->barcode ?? '-',
                 'jumlah' => 1, // tiap row 1 barang (bisa juga $i->quantity kalau ada logic grouping)
                 'keterangan' => 'Kondisi: ' . ucfirst($i->condition) . ' | Harga: ' . $harga
             ];

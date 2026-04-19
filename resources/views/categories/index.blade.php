@@ -58,6 +58,10 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
+                                            <a href="{{ route('categories.show', $category) }}"
+                                               class="btn btn-sm btn-light text-info border shadow-sm rounded-pill" title="Lihat Detail" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
                                             <a href="{{ route('categories.edit', $category) }}"
                                                class="btn btn-sm btn-light text-warning border shadow-sm rounded-pill" title="Edit" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
                                                 <i class="fas fa-edit"></i>

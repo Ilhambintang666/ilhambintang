@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use App\Models\Category;
 use App\Models\Location;
-use App\Models\Borrowing;
+use App\Models\Loan;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -26,23 +26,15 @@ class DashboardController extends Controller
         $maintenanceItems = Item::where('status', 'maintenance')->count();
         
         // Peminjaman aktif (5 terbaru)
-        $activeBorrowings = Borrowing::where('status', 'dipinjam')
+        $activeBorrowings = Loan::whereIn('status', ['approved', 'return_pending'])
             ->with(['user', 'item'])
             ->latest()
             ->take(5)
             ->get();
         
-        // Peminjaman yang akan jatuh tempo (3 hari ke depan)
-        $upcomingReturns = Borrowing::where('status', 'dipinjam')
-            ->where('expected_return_date', '<=', Carbon::now()->addDays(3))
-            ->where('expected_return_date', '>=', Carbon::now())
-            ->with(['user', 'item'])
-            ->orderBy('expected_return_date')
-            ->get();
-        
         // Peminjaman terlambat
-        $overdueBorrowings = Borrowing::where('status', 'dipinjam')
-            ->where('expected_return_date', '<', Carbon::now())
+        $overdueBorrowings = Loan::whereIn('status', ['approved', 'return_pending'])
+            ->whereDate('expected_return_date', '<', Carbon::now())
             ->with(['user', 'item'])
             ->orderBy('expected_return_date')
             ->get();
@@ -59,8 +51,8 @@ class DashboardController extends Controller
         for ($i = 5; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
             $monthYear = $date->format('M Y');
-            $count = Borrowing::whereMonth('borrow_date', $date->month)
-                ->whereYear('borrow_date', $date->year)
+            $count = Loan::whereMonth('created_at', $date->month)
+                ->whereYear('created_at', $date->year)
                 ->count();
             
             $borrowingStats[] = [
@@ -78,7 +70,6 @@ class DashboardController extends Controller
             'borrowedItems',
             'maintenanceItems',
             'activeBorrowings',
-            'upcomingReturns',
             'overdueBorrowings',
             'maintenanceItemsList',
             'borrowingStats'

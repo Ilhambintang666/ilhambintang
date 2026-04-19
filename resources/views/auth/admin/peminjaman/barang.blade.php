@@ -125,7 +125,10 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $item->tanggal }}</td>
-                                    <td>{{ $item->nama_barang }}</td>
+                                    <td>
+                                        <strong>{{ $item->nama_barang }}</strong><br>
+                                        <small class="text-muted"><i class="fas fa-barcode"></i> {{ $item->barcode }}</small>
+                                    </td>
                                     <td>{{ $item->jumlah }}</td>
                                     <td>{{ $item->keterangan }}</td>
                                 </tr>
@@ -166,7 +169,10 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $item->tanggal }}</td>
-                                    <td>{{ $item->nama_barang }}</td>
+                                    <td>
+                                        <strong>{{ $item->nama_barang }}</strong><br>
+                                        <small class="text-muted"><i class="fas fa-barcode"></i> {{ $item->barcode }}</small>
+                                    </td>
                                     <td>{{ $item->jumlah }}</td>
                                     <td>{{ $item->keterangan }}</td>
                                 </tr>
@@ -207,7 +213,10 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $item->tanggal }}</td>
-                                    <td>{{ $item->nama_barang }}</td>
+                                    <td>
+                                        <strong>{{ $item->nama_barang }}</strong><br>
+                                        <small class="text-muted"><i class="fas fa-barcode"></i> {{ $item->barcode }}</small>
+                                    </td>
                                     <td>{{ $item->jumlah }}</td>
                                     <td>{!! nl2br(e($item->keterangan)) !!}</td>
                                 </tr>

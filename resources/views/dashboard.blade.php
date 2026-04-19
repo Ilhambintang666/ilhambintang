@@ -187,99 +187,50 @@
 <!-- Active & Overdue Borrowings -->
 <div class="row">
     <!-- Active Borrowings -->
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="fas fa-clock me-2 text-warning"></i>
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-clock fs-5 me-2 text-warning"></i>
                     Peminjaman Aktif
                 </h5>
-                <a href="{{ route('borrowings.index') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                <a href="{{ route('admin.peminjaman.index') }}" class="btn btn-sm btn-light text-primary rounded-pill px-3 fw-medium">Lihat Semua</a>
             </div>
             <div class="card-body p-0">
                 @if($activeBorrowings->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="text-secondary small text-uppercase tracking-wide" style="background-color: #f8f9fa;">
                                 <tr>
-                                    <th>Peminjam</th>
-                                    <th>Barang</th>
-                                    <th>Tgl Kembali</th>
-                                    <th>Status</th>
+                                    <th class="ps-4 py-3 fw-semibold">Peminjam</th>
+                                    <th class="py-3 fw-semibold">Barang</th>
+                                    <th class="py-3 fw-semibold text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($activeBorrowings as $borrowing)
-                                    <tr>
-                                        <td>
-                                            <strong>{{ $borrowing->borrower_name }}</strong>
-                                        </td>
-                                        <td>{{ $borrowing->item->name }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($borrowing->expected_return_date)->format('d/m/Y') }}</td>
-                                        <td>
-                                            <span class="badge bg-warning">Dipinjam</span>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div class="text-center py-4">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-0">Tidak ada peminjaman aktif</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-    
-    <!-- Overdue Borrowings -->
-    <div class="col-md-6">
-        <div class="card border-danger">
-            <div class="card-header bg-danger text-white border-0 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Peminjaman Terlambat
-                </h5>
-                @if($overdueBorrowings->count() > 0)
-                    <span class="badge bg-white text-danger">{{ $overdueBorrowings->count() }} Items</span>
-                @endif
-            </div>
-            <div class="card-body p-0">
-                @if($overdueBorrowings->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="py-3 px-4">Peminjam</th>
-                                    <th class="py-3">Barang</th>
-                                    <th class="py-3">Tgl Kembali</th>
-                                    <th class="py-3 text-end px-4">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($overdueBorrowings as $borrowing)
-                                    <tr class="hover-shadow-row transition-all">
-                                        <td class="px-4">
+                                    <tr class="hover-shadow-row transition-all border-bottom">
+                                        <td class="ps-4 py-3">
                                             <div class="d-flex align-items-center">
-                                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width:32px; height:32px; font-weight:bold;">
-                                                    {{ strtoupper(substr($borrowing->borrower_name, 0, 1)) }}
+                                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width:38px; height:38px; font-weight:bold;">
+                                                    {{ strtoupper(substr($borrowing->user->name ?? '?', 0, 1)) }}
                                                 </div>
-                                                <strong class="text-dark">{{ $borrowing->borrower_name }}</strong>
+                                                <div>
+                                                    <strong class="text-dark d-block">{{ $borrowing->user->name ?? 'Unknown' }}</strong>
+                                                    <small class="text-muted"><i class="far fa-calendar-alt me-1"></i>{{ \Carbon\Carbon::parse($borrowing->created_at)->format('d M') }} - {{ \Carbon\Carbon::parse($borrowing->expected_return_date)->format('d M') }}</small>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td>
-                                            <div class="small fw-semibold">{{ $borrowing->item->name }}</div>
-                                            <div class="text-muted" style="font-size:0.75rem;"><i class="fas fa-barcode"></i> {{ $borrowing->item->barcode }}</div>
+                                        <td class="py-3">
+                                            <div class="fw-semibold text-dark">{{ $borrowing->item->name }}</div>
+                                            <div class="text-muted small"><i class="fas fa-barcode me-1"></i>{{ $borrowing->item->barcode ?? '-' }}</div>
                                         </td>
-                                        <td>
-                                            <div class="small text-dark">{{ \Carbon\Carbon::parse($borrowing->expected_return_date)->format('d M Y') }}</div>
-                                        </td>
-                                        <td class="text-end px-4">
-                                            <span class="badge bg-danger rounded-pill px-3 shadow-sm pulse-danger text-white">
-                                                Telat {{ \Carbon\Carbon::parse($borrowing->expected_return_date)->diffInDays(now()) }} hari!
-                                            </span>
+                                        <td class="py-3 text-center pe-4">
+                                            @if($borrowing->status === 'approved')
+                                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1 border border-success border-opacity-25">Dipinjam</span>
+                                            @else
+                                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-1 border border-warning border-opacity-25">Kembali (Pending)</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -288,8 +239,74 @@
                     </div>
                 @else
                     <div class="text-center py-5">
-                        <i class="fas fa-check-circle fa-4x text-success mb-3 opacity-50"></i>
-                        <p class="text-muted fw-semibold mb-0">Semua peminjaman berjalan lancar!</p>
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:80px; height:80px;">
+                            <i class="fas fa-inbox fa-2x text-muted opacity-50"></i>
+                        </div>
+                        <p class="text-muted fw-medium mb-0 fs-5">Area Bersih</p>
+                        <p class="text-muted small">Tidak ada peminjaman aktif saat ini.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    
+    <!-- Overdue Borrowings -->
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100" style="border-top: 4px solid #dc3545 !important;">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-danger">
+                    <i class="fas fa-exclamation-triangle fs-5 me-2"></i>
+                    Terlambat
+                </h5>
+                @if($overdueBorrowings->count() > 0)
+                    <span class="badge bg-danger rounded-pill px-3 shadow-sm pulse-danger">{{ $overdueBorrowings->count() }} Peringatan</span>
+                @endif
+            </div>
+            <div class="card-body p-0">
+                @if($overdueBorrowings->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="text-secondary small text-uppercase tracking-wide" style="background-color: #f8f9fa;">
+                                <tr>
+                                    <th class="ps-4 py-3 fw-semibold">Peminjam</th>
+                                    <th class="py-3 fw-semibold">Detail Barang</th>
+                                    <th class="py-3 fw-semibold text-end pe-4">Sanksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($overdueBorrowings as $borrowing)
+                                    <tr class="hover-shadow-row transition-all border-bottom" style="background-color: rgba(220, 53, 69, 0.02);">
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width:38px; height:38px; font-weight:bold;">
+                                                    {{ strtoupper(substr($borrowing->user->name ?? '?', 0, 1)) }}
+                                                </div>
+                                                <div>
+                                                    <strong class="text-dark d-block">{{ $borrowing->user->name ?? 'Unknown' }}</strong>
+                                                    <small class="text-danger fw-medium"><i class="fas fa-calendar-times me-1"></i>Jatuh Tempo: {{ \Carbon\Carbon::parse($borrowing->expected_return_date)->format('d M y') }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <div class="fw-bold text-dark">{{ $borrowing->item->name }}</div>
+                                            <div class="text-muted small"><i class="fas fa-barcode me-1 text-secondary opacity-50"></i>{{ $borrowing->item->barcode ?? '-' }}</div>
+                                        </td>
+                                        <td class="text-end py-3 pe-4">
+                                            <div class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 border border-danger border-opacity-25 fw-bold">
+                                                <i class="fas fa-clock me-1"></i> Telat {{ \Carbon\Carbon::parse($borrowing->expected_return_date)->diffInDays(now()) }} Hari
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-center py-5">
+                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:80px; height:80px;">
+                            <i class="fas fa-check-circle fa-2x text-success opacity-75"></i>
+                        </div>
+                        <p class="text-success fw-bold mb-0 fs-5">Performa Sempurna!</p>
                         <p class="text-muted small">Tidak ada barang yang terlambat pengembaliannya.</p>
                     </div>
                 @endif
@@ -298,58 +315,7 @@
     </div>
 </div>
 
-@if($upcomingReturns->count() > 0)
-<!-- Upcoming Returns -->
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card border-warning">
-            <div class="card-header bg-warning text-white border-0">
-                <h5 class="mb-0">
-                    <i class="fas fa-calendar-exclamation me-2"></i>
-                    Jatuh Tempo (3 Hari ke Depan)
-                </h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Peminjam</th>
-                                <th>Barang</th>
-                                <th>Tanggal Kembali</th>
-                                <th>Sisa Hari</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($upcomingReturns as $borrowing)
-                                <tr>
-                                    <td><strong>{{ $borrowing->borrower_name }}</strong></td>
-                                    <td>{{ $borrowing->item->name }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($borrowing->expected_return_date)->format('d/m/Y') }}</td>
-                                    <td>
-                                        <span class="badge bg-info">
-                                            {{ \Carbon\Carbon::parse($borrowing->expected_return_date)->diffInDays(now()) }} hari
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <form action="{{ route('borrowings.return', $borrowing) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i class="fas fa-undo me-1"></i> Konfirmasi
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
+
 @endsection
 
 @section('scripts')
